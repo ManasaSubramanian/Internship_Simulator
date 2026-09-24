@@ -1,9 +1,15 @@
 {
   "name": "internship-simulator",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "An interactive software engineering internship simulation game.",
   "private": true,
   "scripts": {
-    "test": "node tests/run-tests.js"
+    "test": "node tests/run-tests.js",
+    "gen:sql": "node tests/gen-sql-expected.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0",
+    "pyodide": "0.26.4",
+    "sql.js": "1.10.3"
   }
 }

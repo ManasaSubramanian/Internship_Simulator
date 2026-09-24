@@ -110,4 +110,26 @@ module.exports = {
   }
   return free.length + big;
 }`,
+  c15: `function bestNextRide(rides) {
+  const open = rides.filter((r) => r.open);
+  if (!open.length) return null;
+  open.sort((a, b) => (a.wait + a.walk) - (b.wait + b.walk) || a.walk - b.walk || (a.name < b.name ? -1 : 1));
+  return open[0].name;
+}`,
+  'i-js1': `function reverseWords(s) {
+  const w = s.trim().split(/\\s+/).filter(Boolean);
+  return w.reverse().join(' ');
+}`,
+  'i-js2': `function isPalindrome(s) {
+  const c = s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return c === [...c].reverse().join('');
+}`,
+  'i-js3': `function twoSum(nums, target) {
+  const seen = new Map();
+  for (let j = 0; j < nums.length; j++) {
+    if (seen.has(target - nums[j])) return [seen.get(target - nums[j]), j];
+    if (!seen.has(nums[j])) seen.set(nums[j], j);
+  }
+  return [];
+}`,
 };

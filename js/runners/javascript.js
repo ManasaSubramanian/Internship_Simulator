@@ -1,4 +1,4 @@
-// Runs player code against test cases. In the browser the code executes in a
+// JavaScript runner: runs player code against test cases. In the browser the code executes in a
 // Web Worker so an infinite loop can be killed; in Node (tests) it runs inline.
 (function (root) {
   function deepEqual(a, b) {
@@ -102,7 +102,11 @@
     });
   }
 
-  const api = { run: run, runCore: runCore, deepEqual: deepEqual };
+  const api = { run: run, runCore: runCore, deepEqual: deepEqual, show: show };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (root.IS) root.IS.codeRunner = api;
+  if (root.IS) {
+    root.IS.runners = root.IS.runners || {};
+    root.IS.runners.javascript = api;
+    root.IS.codeRunner = api;
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

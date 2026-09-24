@@ -25,31 +25,75 @@ IS.grading = (function () {
     return wordList.filter((w) => vocab.includes(w)).length;
   }
 
-  // ── Coding ──────────────────────────────────────────────
+  // ── Technical work (code, SQL, web, config, terminal) ─────
+  // run: { results: [{pass}], error } from a runner. Quality rules depend on language.
+  const QUALITY = {
+    javascript: (code, starter) => [
+      ['No leftover debug logging', !/console\.log\s*\(/.test(code), 'Remove console.log calls before submitting.'],
+      ['Explains approach with comments', newComment(code, starter, /\/\/.*|\/\*[\s\S]*?\*\//g), 'Add a short comment explaining your approach.'],
+      ['Modern declarations (const/let)', !/\bvar\s/.test(code), 'Prefer const/let over var.'],
+    ],
+    python: (code, starter) => [
+      ['No leftover debug prints', !/^\s*print\s*\(/m.test(code), 'Remove print() debugging before submitting.'],
+      ['Explains approach (comment or docstring)', newComment(code, starter, /#.*|"""[\s\S]*?"""/g), 'Add a comment or docstring explaining your approach.'],
+      ['No global state', !/^\s*global\s/m.test(code), 'Avoid the global keyword; pass values in and return results.'],
+    ],
+    cpp: (code, starter) => [
+      ['No debug output in functions', !/\b(cout|printf|cerr)\b/.test(code), 'Remove cout/printf debugging. Return values instead.'],
+      ['Explains approach with comments', newComment(code, starter, /\/\/.*|\/\*[\s\S]*?\*\//g), 'Add a short comment explaining your approach.'],
+      ['No mutable globals', !/^(int|double|float|long|char|bool|unsigned)\s+\w+\s*(=[^;(]*)?;/m.test(code), 'Firmware code avoids global mutable state.'],
+    ],
+    sql: (code, starter) => [
+      ['Selects explicit columns (no SELECT *)', !/select\s+\*/i.test(code), 'Name the columns you need instead of SELECT *.'],
+      ['Explains the query with a -- comment', newComment(code, starter, /--.*/g), 'Add a -- comment describing what the query answers.'],
+      ['Readable keywords (SELECT, FROM, WHERE in caps)', /\bSELECT\b/.test(code) && /\bFROM\b/.test(code), 'Uppercase SQL keywords are the team convention.'],
+    ],
+    web: (code) => [
+      ['Page declares a language (<html lang>)', /<html[^>]*\blang=/i.test(code), 'Add lang="en" to the html tag for screen readers.'],
+      ['No inline event handlers', !/\son[a-z]+\s*=/i.test(code), 'Use addEventListener instead of onclick="…".'],
+      ['Uses semantic elements', /<(main|header|nav|section|button|ul|label)\b/i.test(code), 'Use semantic elements like main, section, button.'],
+    ],
+    yaml: (code, starter) => [
+      ['Explains config with # comments', newComment(code, starter, /#.*/g), 'Comment non-obvious settings with #.'],
+      ['Consistent 2-space indentation', !/^( {1}| {3}| {5})\S/m.test(code), 'Indent YAML with 2 spaces per level.'],
+      ['No trailing whitespace or tabs', !/[ \t]+$/m.test(code) && !/\t/.test(code), 'Remove tabs and trailing spaces.'],
+    ],
+  };
+
+  function newComment(code, starter, re) {
+    const list = (s) => (String(s || '').match(re) || []).map((c) => c.trim());
+    const old = new Set(list(starter));
+    return list(code).some((c) => !old.has(c) && !/todo/i.test(c));
+  }
+
+  const TEST_LABEL = { sql: 'Result sets match (visible + hidden database)', web: 'Page checks passing (visible + hidden)', yaml: 'Config checks passing', terminal: 'Objectives completed' };
+
   function coding(task, code, run) {
     const breakdown = [];
     const notes = [];
-    if (!code || code.trim() === task.starter.trim()) {
-      return { score: 0, breakdown: [item('Submission', 0, 100, 'No changes were made to the starter code.')], notes: ['You submitted the starter code unchanged.'] };
+    const lang = task.type === 'sql' ? 'sql' : task.type === 'web' ? 'web' : task.type === 'config' ? 'yaml' : task.lang || 'javascript';
+    if (task.type === 'terminal') {
+      const passed = run.results.filter((r) => r.pass).length;
+      breakdown.push(item(TEST_LABEL.terminal, 100 * passed / run.results.length, 100, passed + ' / ' + run.results.length + ' objectives'));
+      run.results.forEach((r) => { if (!r.pass) notes.push('Not done: ' + r.label); });
+      return { score: total(breakdown), breakdown, notes };
+    }
+    if (!code || (task.starter && code.trim() === task.starter.trim())) {
+      return { score: 0, breakdown: [item('Submission', 0, 100, 'No changes were made to the starter.')], notes: ['You submitted the starter unchanged.'] };
     }
     if (run.error) {
-      breakdown.push(item('Tests passing', 0, 85, run.error));
-      notes.push('Your code did not run: ' + run.error);
+      breakdown.push(item(TEST_LABEL[lang] || 'Tests passing', 0, 85, run.error));
+      notes.push('Your work did not run: ' + run.error);
     } else {
       const passed = run.results.filter((r) => r.pass).length;
       const n = run.results.length;
-      breakdown.push(item('Tests passing (visible + hidden)', 85 * passed / n, 85, passed + ' / ' + n + ' tests passed'));
-      if (passed < n) notes.push('Some hidden tests failed. Think about edge cases: empty inputs, zeros, negatives, ties.');
+      breakdown.push(item(TEST_LABEL[lang] || 'Tests passing (visible + hidden)', 85 * passed / n, 85, passed + ' / ' + n + ' passed'));
+      if (passed < n) notes.push('Some checks failed. Think about edge cases: empty inputs, zeros, negatives, ties, bad data.');
     }
     const working = !run.error && run.results.some((r) => r.pass);
-    const hasDebug = /console\.log\s*\(/.test(code);
-    breakdown.push(item('No leftover debug logging', working && !hasDebug ? 5 : 0, 5, hasDebug ? 'Remove console.log calls before submitting.' : ''));
-    const comments = (s) => (s.match(/\/\/.*|\/\*[\s\S]*?\*\//g) || []).map((c) => c.trim());
-    const starterComments = new Set(comments(task.starter));
-    const commented = comments(code).some((c) => !starterComments.has(c) && !/todo/i.test(c));
-    breakdown.push(item('Explains approach with comments', working && commented ? 5 : 0, 5, commented ? '' : 'Add a short comment explaining your approach.'));
-    const usesVar = /\bvar\s/.test(code);
-    breakdown.push(item('Modern declarations (const/let)', working && !usesVar ? 5 : 0, 5, usesVar ? 'Prefer const/let over var.' : ''));
+    (QUALITY[lang] || QUALITY.javascript)(code, task.starter).forEach(([label, ok, tip]) => {
+      breakdown.push(item(label, working && ok ? 5 : 0, 5, ok ? '' : tip));
+    });
     return { score: total(breakdown), breakdown, notes };
   }
 
@@ -209,5 +253,5 @@ IS.grading = (function () {
     return { score: total(breakdown), breakdown, notes };
   }
 
-  return { coding, quiz, review, written, presentation };
+  return { coding, quiz, review, written, presentation, QUALITY };
 })();

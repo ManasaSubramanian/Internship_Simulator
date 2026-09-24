@@ -1,12 +1,57 @@
-// Every assignment in the internship. Time values are in minutes of the
-// 3-hour workday (0 = 9:00 AM, 180 = 12:00 PM).
-//
-// Shared fields:
-//   id, type, title, from (character id), day (assigned), due {day, minute},
-//   effort (focused minutes you must log before you can submit),
-//   kind: 'individual' | 'group', group (group project id), optional (stretch),
-//   brief (HTML), hints [mentor hints], wiki (docs snippet), peer {who, text}
-IS.tasks = [
+// Internship 1: JavaScript, Ride Systems Software.
+IS.addCharacters({
+  maya: {
+    name: 'Maya Chen', title: 'Engineering Manager, Ride Systems Software', role: 'Manager',
+    bio: 'Maya has shipped software for six attractions and still rides every one on opening day. Direct, fair, and serious about deadlines and clear communication.',
+    look: { skin: '#f1d0b5', hair: 'bun', hairColor: '#1c1714', eyes: '#3b2618', top: 'blazer', topColor: '#2b2622', bottom: 'skirt', bottomColor: '#2b2622', shoes: 'flats', accessory: 'glasses' },
+    chat: ['The best interns tell me early when something is off track.', 'Write things down. Design docs feel slow until the day they save you a week.', 'If you are going to miss a deadline, tell me before it passes, not after.', 'Safety first, then show, then efficiency.'],
+  },
+  dev: {
+    name: 'Dev Patel', title: 'Software Engineer II (your mentor)', role: 'Mentor',
+    bio: 'Dev was an intern on this exact team three summers ago. Loves rubber-duck debugging, bad puns and very strong cold brew.',
+    look: { skin: '#a8704a', hair: 'short', hairColor: '#1c1714', eyes: '#3b2618', facial: 'beard', top: 'hoodie', topColor: '#3e6b48', bottom: 'pants', bottomColor: '#8a6d4b', shoes: 'sneakers', accessory: 'headphones', build: 'broad' },
+    chat: ['Read the failing test name first. Half the time it tells you exactly what is wrong.', 'Nobody judges you for asking questions. I asked roughly nine thousand my first summer.', 'Stuck 30 minutes? Write down what you tried, then ask.'],
+  },
+  jordan: {
+    name: 'Jordan Rivera', title: 'UX Engineering Intern', role: 'Intern', reliability: 0.9,
+    bio: 'Front-end and accessibility nerd who sketches ride-queue ideas on napkins. Very dependable.',
+    look: { skin: '#d9a57c', hair: 'curly', hairColor: '#2f2019', eyes: '#5a3a22', top: 'tee', topColor: '#c2593f', bottom: 'pants', bottomColor: '#c9b18a', shoes: 'sneakers', hat: 'beanie' },
+    chat: ['Good queue design is storytelling. The wait IS part of the ride.', 'I always check color contrast first.', 'Churro after this? Asking for a friend. The friend is me.'],
+  },
+  sam: {
+    name: 'Sam Okafor', title: 'Software Engineering Intern', role: 'Intern', reliability: 0.6,
+    bio: 'Hilarious, brilliant at algorithms, not great at calendars. Tends to go quiet when stuck.',
+    look: { skin: '#6b4029', hair: 'buzz', hairColor: '#1c1714', eyes: '#3b2618', top: 'hawaiian', topColor: '#6f8f5e', bottom: 'shorts', bottomColor: '#c9b18a', shoes: 'sneakers', build: 'slim' },
+    chat: ['I solved it in my head at 2 AM. Unfortunately my head does not push to GitHub.', 'Tabs vs spaces matters less than whether you wrote tests.', 'I am definitely starting my part today. Probably.'],
+  },
+  priya: {
+    name: 'Priya Nair', title: 'Data Science Intern', role: 'Intern', reliability: 0.95,
+    bio: 'Graduate student who models crowd flow for fun. Precise, fast, a little intimidating until you know her.',
+    look: { skin: '#a8704a', hair: 'ponytail', hairColor: '#1c1714', eyes: '#3b2618', top: 'button', topColor: '#f3ece0', bottom: 'pants', bottomColor: '#2b2622', shoes: 'loafers', accessory: 'glasses' },
+    chat: ['Crowds behave like fluids until they behave like people.', 'What decision will this chart help someone make?', 'If our demo lacks a live graph I will be personally offended.'],
+  },
+  tyler: {
+    name: 'Tyler Brooks', title: 'Controls Engineering Intern', role: 'Intern', reliability: 0.7,
+    bio: 'Lives in the ride lab with the sensors and PLCs. Great hands-on engineer; hardware delays tend to cascade.',
+    look: { skin: '#f8e1cf', hair: 'sidepart', hairColor: '#a8412a', eyes: '#4f6b3a', facial: 'stubble', top: 'labcoat', bottom: 'pants', bottomColor: '#4b5a3a', shoes: 'boots', hat: 'cap' },
+    chat: ['It is never "just wires."', 'Four hundred restraint cycles. Zero faults. Chef\'s kiss.', 'Weird sensor data? It\'s always a loose connector.'],
+  },
+});
+
+IS.registerTrack({
+  id: 'javascript', n: 1, icon: '🎢', lang: 'javascript', langLabel: 'JavaScript', rate: 24,
+  title: 'Software Engineering Intern', team: 'Ride Systems Software',
+  blurb: 'Write JavaScript for wait times, show schedules, ride sensors and guest routing.',
+  skills: ['JavaScript', 'Testing & edge cases', 'Code review', 'Algorithms (BFS, intervals, sorting)'],
+  channel: 'ride-systems', lab: { name: 'Ride Systems Lab', art: 'ride' },
+  cast: { manager: 'maya', mentor: 'dev', interns: ['jordan', 'sam', 'priya', 'tyler'] },
+  groups: {
+    g1: { name: 'Queue Time Display Board', members: ['jordan', 'sam'] },
+    g2: { name: 'Guest Flow Optimizer', members: ['priya', 'tyler'] },
+  },
+  incident: 'The guest app is showing negative and "Infinity" wait times.',
+  scenario: { conflictA: 'a LIVE demo', conflictB: 'a recorded video', delay: 'the walkway sensors failed calibration', delayFix: 'mock sensor data' },
+  tasks: [
   // ───────────────────────────── WEEK 1: ONBOARDING ─────────────────────────────
   {
     id: 'q1', type: 'quiz', title: 'Safety & Security Training', from: 'rosa', day: 1,
@@ -178,7 +223,7 @@ app.get('/api/wait/:rideId', async (req, res) => {
     },
   },
   {
-    id: 'c3', type: 'coding', title: 'Bug Fix: Ride Vehicles Needed', from: 'maya', day: 4,
+    id: 'c3', type: 'coding', bugfix: true, title: 'Bug Fix: Ride Vehicles Needed', from: 'maya', day: 4,
     due: { day: 5, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
     brief: `<p>🐞 <b>Bug ticket RIDE-1042:</b> The load planner under-counts vehicles when the last vehicle is partly full, leaving guests on the platform.</p>
       <p>Fix <code>vehiclesNeeded(guests, seatsPerVehicle)</code> so that:</p>
@@ -387,7 +432,7 @@ function findShowConflicts(shows) {
     peer: { who: 'sam', text: 'Interval problems! You could do a sweep line, but a double loop is fine for like 20 shows.' },
   },
   {
-    id: 'c7', type: 'coding', title: 'Bug Fix: Fireworks Cue Timing', from: 'dev', day: 12,
+    id: 'c7', type: 'coding', bugfix: true, title: 'Bug Fix: Fireworks Cue Timing', from: 'dev', day: 12,
     due: { day: 13, minute: 180 }, effort: 60, kind: 'individual', category: 'Coding',
     brief: `<p>🎆 <b>Bug ticket SHOW-771:</b> In rehearsal, the fireworks fired at the wrong moments. The cue converter is broken.</p>
       <p>Fix <code>cueToMs(cue)</code> to convert timestamps into <b>milliseconds</b> (rounded to a whole number). It must support <code>"m:ss"</code>, <code>"m:ss.s"</code> (fractional seconds) and <code>"h:mm:ss"</code>.</p>
@@ -648,7 +693,7 @@ function rowsNeeded(partySizes, rowSize) {
     peer: { who: 'priya', text: 'It\'s bin packing! First-fit, not best-fit. Keep it in order or the tests will disagree with you.' },
   },
   {
-    id: 'c12', type: 'coding', title: '🚨 URGENT: Negative Wait Times in Production', from: 'maya', day: 22,
+    id: 'c12', type: 'coding', bugfix: true, title: '🚨 URGENT: Negative Wait Times in Production', from: 'maya', day: 22,
     due: { day: 22, minute: 120 }, effort: 40, kind: 'individual', category: 'Coding', urgent: true,
     brief: `<p>🚨 <b>SEV-2 incident:</b> The guest app is showing <b>"-5 min"</b> and <b>"Infinity min"</b> waits. Guests are screenshotting it. Fix <code>estimateWait(queueLength, ridersPerHour)</code> <b>by 11:00 AM</b>:</p>
       <ul><li>if ridersPerHour ≤ 0 the ride is closed → return <code>null</code></li>
@@ -780,7 +825,7 @@ function servoStep(current, target, maxStep, minAngle, maxAngle) {
   // ───────────────────────────── WEEK 6: FINALS ─────────────────────────────
   {
     id: 'w8', type: 'written', title: 'Capstone README Documentation', from: 'dev', day: 26,
-    due: { day: 27, minute: 180 }, effort: 60, kind: 'group', group: 'g2', category: 'Design',
+    due: { day: 28, minute: 180 }, effort: 60, kind: 'group', group: 'g2', category: 'Design',
     brief: `<p>Code nobody can run is code nobody uses. Write the README for the Guest Flow Optimizer repo: <b>Overview</b>, <b>Setup</b>, <b>Usage</b> (with an example), <b>API/Functions</b>, <b>Testing</b> and <b>Contributing</b>. 150+ words.</p>`,
     hints: ['Document each function you wrote: shortestPath, hourlyThroughput, rowsNeeded, with parameters and return values.', 'Show one code example in Usage. Readers copy-paste examples first.'],
     wiki: '<b>Docs Standards:</b> README sections: What is it · Getting started · Usage · API reference · Running tests · How to contribute.',
@@ -800,7 +845,7 @@ function servoStep(current, target, maxStep, minAngle, maxAngle) {
   },
   {
     id: 'p3', type: 'presentation', title: 'Final Capstone Presentation to Leadership', from: 'harriet', day: 26,
-    due: { day: 29, minute: 150 }, effort: 150, kind: 'group', group: 'g2', category: 'Presentation',
+    due: { day: 33, minute: 150 }, effort: 150, kind: 'group', group: 'g2', category: 'Presentation',
     brief: `<p>The big one. Your team presents the Guest Flow Optimizer to <b>Harriet Lin (VP, Creative Technology)</b>, Maya, Dev and Rosa. Build a <b>6–10 slide</b> deck with a <b>Title</b>, <b>Problem</b>, <b>Solution</b>, <b>Architecture</b>, <b>Demo</b>, <b>Results/Metrics</b> and <b>Next Steps</b>. Expect tough questions.</p>`,
     slideRange: [6, 10], required: ['title', 'problem', 'solution', 'architecture', 'demo', 'results', 'next'],
     terms: ['path', 'crowd', 'throughput', 'sensor', 'wait', 'guest', 'privacy', 'row'],
@@ -832,8 +877,8 @@ function servoStep(current, target, maxStep, minAngle, maxAngle) {
     peer: { who: 'priya', text: 'I\'ll run the live dashboard during the demo slide. You take the architecture and Q&A?' },
   },
   {
-    id: 'w9', type: 'written', title: 'Self-Evaluation for Final Review', from: 'rosa', day: 27,
-    due: { day: 28, minute: 180 }, effort: 60, kind: 'individual', category: 'Communication',
+    id: 'w9', type: 'written', title: 'Self-Evaluation for Final Review', from: 'rosa', day: 30,
+    due: { day: 31, minute: 180 }, effort: 60, kind: 'individual', category: 'Communication',
     brief: `<p>Before your final review, write a self-evaluation: <b>Accomplishments</b>, <b>Challenges</b>, <b>What you learned</b>, <b>Feedback you received</b> and <b>Career goals</b>. Be honest and specific (150+ words).</p>`,
     hints: ['Name specific projects: the display board, the incident fix, the capstone.', 'Challenges + what you did about them > a list of excuses.'],
     wiki: '<b>Intern Program:</b> Self-evaluations are read by your manager and the return-offer committee. Specific, reflective and forward-looking wins.',
@@ -849,26 +894,71 @@ function servoStep(current, target, maxStep, minAngle, maxAngle) {
       ],
       terms: ['capstone', 'display', 'incident', 'presentation', 'team', 'test', 'deadline', 'review'], termsNeeded: 4,
     },
+  },  {
+    id: 'c15', type: 'coding', title: 'Capstone: Best Next Ride', from: 'priya', day: 27,
+    due: { day: 30, minute: 180 }, effort: 75, kind: 'group', group: 'g2', category: 'Coding',
+    brief: `<p>The guest app suggests what to ride next. Each ride is <code>{ name, wait, walk, open }</code> (minutes). Write <code>bestNextRide(rides)</code> that returns the <b>name</b> of the open ride with the smallest <code>wait + walk</code>. Ties: smaller walk wins, then alphabetical name. No open rides → <code>null</code>.</p>`,
+    fnName: 'bestNextRide',
+    starter: `// Suggest the open ride with the lowest total time (wait + walk).
+function bestNextRide(rides) {
+  // TODO
+}
+`,
+    tests: [
+      { args: [[{ name: 'Sky Tram', wait: 10, walk: 5, open: true }, { name: 'Galaxy Coaster', wait: 5, walk: 20, open: true }]], expected: 'Sky Tram' },
+      { args: [[]], expected: null },
+    ],
+    hidden: [
+      { args: [[{ name: 'A', wait: 10, walk: 10, open: false }]], expected: null },
+      { args: [[{ name: 'Rapids', wait: 15, walk: 5, open: true }, { name: 'Carousel', wait: 5, walk: 15, open: true }]], expected: 'Rapids' },
+      { args: [[{ name: 'Zebra Ride', wait: 5, walk: 5, open: true }, { name: 'Alpha Ride', wait: 5, walk: 5, open: true }]], expected: 'Alpha Ride' },
+      { args: [[{ name: 'Teacups', wait: 0, walk: 2, open: true }, { name: 'Rocket', wait: 1, walk: 0, open: true }]], expected: 'Rocket' },
+    ],
+    hints: ['Filter open rides first; return null if none.', 'Sort with a three-key comparator: total, then walk, then name.'],
+    wiki: '<b>Guest App Spec:</b> Recommendations must never suggest a closed ride. Walking time matters more than you think in the heat.',
+    peer: { who: 'priya', text: 'Three-key sort: total, walk, name. Or a single loop that keeps the best so far.' },
   },
-];
-
-IS.taskById = function (id) {
-  return IS.tasks.find((t) => t.id === id);
-};
-
-// Presentation slide types available in the deck builder.
-IS.slideTypes = [
-  { id: 'title', label: 'Title', icon: '🎬', tip: 'Project name, team, date' },
-  { id: 'agenda', label: 'Agenda', icon: '🗂️', tip: 'What you will cover' },
-  { id: 'problem', label: 'Problem', icon: '❓', tip: 'The guest or business problem' },
-  { id: 'solution', label: 'Solution', icon: '💡', tip: 'What you built / propose' },
-  { id: 'architecture', label: 'Architecture', icon: '🏗️', tip: 'How the pieces fit together' },
-  { id: 'demo', label: 'Demo', icon: '🖥️', tip: 'Show it working' },
-  { id: 'results', label: 'Results & Metrics', icon: '📈', tip: 'Numbers, outcomes, impact' },
-  { id: 'challenges', label: 'Challenges & Learnings', icon: '🧗', tip: 'What was hard, what you learned' },
-  { id: 'timeline', label: 'Timeline', icon: '🗓️', tip: 'Milestones' },
-  { id: 'team', label: 'Team & Thanks', icon: '🤝', tip: 'Credit people' },
-  { id: 'next', label: 'Next Steps', icon: '➡️', tip: 'What happens after today' },
-  { id: 'qa', label: 'Q&A', icon: '🙋', tip: 'Invite questions' },
-  { id: 'meme', label: 'Meme Slide', icon: '🐸', tip: 'Risky...' },
-];
+  ],
+  interview: {
+    coding: [
+      {
+        id: 'i-js1', title: 'Reverse the Words', fnName: 'reverseWords',
+        brief: '<p>Write <code>reverseWords(s)</code> that returns the words of <code>s</code> in reverse order, separated by single spaces, ignoring extra whitespace. <code>"  hello   world "</code> → <code>"world hello"</code>.</p>',
+        starter: 'function reverseWords(s) {\n  // TODO\n}\n',
+        tests: [{ args: ['hello world'], expected: 'world hello' }, { args: ['  a  b c '], expected: 'c b a' }],
+        hidden: [{ args: [''], expected: '' }, { args: ['one'], expected: 'one' }, { args: ['   '], expected: '' }],
+      },
+      {
+        id: 'i-js2', title: 'Valid Palindrome', fnName: 'isPalindrome',
+        brief: '<p>Write <code>isPalindrome(s)</code>: true if <code>s</code> reads the same forwards and backwards, ignoring case and any non-alphanumeric characters. <code>"Race car!"</code> → <code>true</code>.</p>',
+        starter: 'function isPalindrome(s) {\n  // TODO\n}\n',
+        tests: [{ args: ['Race car!'], expected: true }, { args: ['hello'], expected: false }],
+        hidden: [{ args: [''], expected: true }, { args: ['A man, a plan, a canal: Panama'], expected: true }, { args: ['ab2a'], expected: false }],
+      },
+      {
+        id: 'i-js3', title: 'Two Sum', fnName: 'twoSum',
+        brief: '<p>Write <code>twoSum(nums, target)</code> that returns indices <code>[i, j]</code> (i &lt; j) of two numbers adding to <code>target</code>. If several pairs work, return the one with the smallest <code>j</code> (then smallest <code>i</code>). None → <code>[]</code>.</p>',
+        starter: 'function twoSum(nums, target) {\n  // TODO\n}\n',
+        tests: [{ args: [[2, 7, 11, 15], 9], expected: [0, 1] }, { args: [[3, 3], 6], expected: [0, 1] }],
+        hidden: [{ args: [[1, 2, 3], 7], expected: [] }, { args: [[1, 4, 2, 3], 5], expected: [0, 1] }, { args: [[5, 1, 4, 0], 5], expected: [1, 2] }],
+      },
+    ],
+    concepts: [
+      { q: 'What does `[1, 2, 3].map(x => x * 2)` return?', options: ['6', '[2, 4, 6]', 'undefined', '[1, 2, 3]'], answer: 1 },
+      { q: 'Which comparison avoids type coercion?', options: ['==', '===', '=', '!='], answer: 1 },
+      { q: 'A variable declared with `const` holding an array…', options: ['can never change at all', 'can be reassigned but not mutated', 'cannot be reassigned, but the array can be mutated', 'is global'], answer: 2 },
+      { q: 'What is `typeof null`?', options: ['"null"', '"undefined"', '"object"', '"number"'], answer: 2 },
+      { q: 'In what order do these log? `console.log(1); setTimeout(() => console.log(2), 0); console.log(3);`', options: ['1 2 3', '1 3 2', '2 1 3', '3 2 1'], answer: 1 },
+      { q: 'What is the average time complexity of looking up a key in a JavaScript `Map`?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], answer: 0 },
+      { q: 'What does an `async` function always return?', options: ['A callback', 'A Promise', 'undefined', 'The awaited value synchronously'], answer: 1 },
+      { q: '`let` differs from `var` because `let` is…', options: ['function-scoped', 'block-scoped', 'always global', 'immutable'], answer: 1 },
+    ],
+  },
+  training: {
+    lessons: [
+      { title: 'Strings & arrays toolkit', html: '<p>Most interview string problems are <b>split → transform → join</b>.</p><pre>"  a  b ".trim().split(/\\s+/)   // ["a", "b"]\n["a", "b"].reverse().join(" ") // "b a"\n[1, 2, 3].filter(n => n > 1)   // [2, 3]\n[1, 2, 3].reduce((a, b) => a + b, 0) // 6</pre><p>Watch out: <code>"".split(/\\s+/)</code> is <code>[""]</code>, so handle empty input first.</p>' },
+      { title: 'Edge cases first', html: '<p>Before coding, list edge cases out loud: <b>empty input, one element, duplicates, negatives, ties, no answer</b>. Interviewers score this habit highly. Write the guard clauses first:</p><pre>if (!nums.length) return [];</pre>' },
+      { title: 'Hash maps for speed', html: '<p>Nested loops are O(n²). A <code>Map</code> remembers what you have seen so one pass is enough:</p><pre>const seen = new Map();\nfor (let j = 0; j &lt; nums.length; j++) {\n  const need = target - nums[j];\n  if (seen.has(need)) return [seen.get(need), j];\n  if (!seen.has(nums[j])) seen.set(nums[j], j);\n}\nreturn [];</pre>' },
+    ],
+  },
+});

@@ -1,0 +1,433 @@
+// Internship 5: Linux, Show Control Infrastructure.
+// Every technical task is a real terminal session on a simulated server.
+(function () {
+  const LOG = [
+    '2027-06-14T08:00:01 [INFO] showctl starting (v4.2.1)',
+    '2027-06-14T08:00:03 [INFO] loaded config /etc/showctl/main.conf',
+    '2027-06-14T08:00:04 [WARN] audio.conf: sample rate not set, using 48000',
+    '2027-06-14T08:01:10 [INFO] projector P01 online',
+    '2027-06-14T08:01:11 [INFO] projector P02 online',
+    '2027-06-14T08:01:12 [ERROR] projector P07 not responding (E17)',
+    '2027-06-14T08:02:00 [INFO] fireworks controller handshake ok',
+    '2027-06-14T08:05:31 [WARN] cue 118 drift 12ms',
+    '2027-06-14T08:09:44 [ERROR] lights: DMX universe 3 timeout (E42)',
+    '2027-06-14T08:10:02 [INFO] retrying DMX universe 3',
+    '2027-06-14T08:10:03 [ERROR] lights: DMX universe 3 timeout (E42)',
+    '2027-06-14T08:15:20 [INFO] parade route sync complete',
+    '2027-06-14T08:20:00 [WARN] disk usage 71%',
+    '2027-06-14T08:31:12 [ERROR] audio: buffer underrun on zone B (E08)',
+    '2027-06-14T08:31:13 [INFO] audio zone B recovered',
+    '2027-06-14T08:40:00 [INFO] heartbeat ok',
+    '2027-06-14T08:44:09 [WARN] cue 204 drift 9ms',
+    '2027-06-14T08:50:51 [ERROR] projector P12 lamp hours exceeded (E31)',
+    '2027-06-14T08:55:00 [INFO] heartbeat ok',
+    '2027-06-14T08:59:30 [ERROR] fireworks: cue file checksum mismatch (E55)',
+    '2027-06-14T09:00:00 [WARN] retrying cue file load',
+    '2027-06-14T09:00:01 [INFO] cue file loaded',
+    '2027-06-14T09:05:00 [ERROR] lights: DMX universe 3 timeout (E42)',
+    '2027-06-14T09:10:00 [INFO] heartbeat ok',
+  ];
+  const SHOW_LOG = LOG.join('\n') + '\n';
+  const count = (lvl) => LOG.filter((l) => l.includes('[' + lvl + ']')).length;
+  const CSV = 'id,zone,status\nP01,Frontier,ONLINE\nP02,Frontier,ONLINE\nP03,Hub,ONLINE\nP07,Hub,OFFLINE\nP05,Castle,ONLINE\nP12,Castle,OFFLINE\nP09,Frontier,ONLINE\nP04,Castle,ONLINE\n';
+
+  function fs(extra) {
+    extra = extra || {};
+    return {
+      files: Object.assign({
+        '/srv/showctl/README': 'Show Control Server\nConfig lives in /etc/showctl\nLogs live in /var/log/showctl\nCue files live in /srv/shows\n',
+        '/etc/showctl/main.conf': 'server=showctl-01\nport=7400\nlog_level=info\n',
+        '/etc/showctl/audio.conf': 'zones=A,B,C\nvolume=72\n',
+        '/etc/showctl/lights.conf': 'dmx_universes=4\nfade_ms=250\n',
+        '/etc/showctl/fireworks.conf': 'controller=pyro-2\ncue_offset=-120\n',
+        '/var/log/showctl/show.log': SHOW_LOG,
+        '/var/log/showctl/old/show.log.1': 'yesterday...\n',
+        '/var/log/showctl/old/show.log.2': 'two days ago...\n',
+        '/var/log/showctl/old/audio.log.1': 'yesterday audio...\n',
+        '/srv/shows/nightly/01-opening.cue': 'T=0 lights:blackout\n',
+        '/srv/shows/nightly/02-castle.cue': 'T=12000 projector:castle\n',
+        '/srv/shows/nightly/03-finale.cue': 'T=540000 fireworks:finale\n',
+        '/srv/shows/parade/01-start.cue': 'T=0 audio:parade_theme\n',
+        '/srv/shows/parade/02-floats.cue': 'T=30000 lights:floats\n',
+        '/srv/data/projectors.csv': CSV,
+        '/home/intern/.bashrc': 'alias ll="ls -l"\n',
+      }, extra.files || {}),
+      dirs: ['/backup'].concat(extra.dirs || []),
+      procs: extra.procs || [{ pid: 101, name: 'showctl-main', cpu: 4.2 }, { pid: 215, name: 'dmx-bridge', cpu: 1.1 }, { pid: 342, name: 'audio-mixer', cpu: 6.5 }],
+      capacity: extra.capacity || 0,
+      cwd: '/home/intern',
+    };
+  }
+  const MOTD = 'showctl-01 · Show Control Server (simulated)\nType `help` to list commands.';
+  const ownerX = (sh, p) => { const m = sh.mode(p); return !!m && (parseInt(m[0], 10) & 1) === 1; };
+  const DEPLOY = '#!/bin/sh\n# deploy tonight\'s cues\nls /srv/show/nightly\necho deploy complete\n';
+
+  IS.addCharacters({
+    hana: {
+      name: 'Hana Kowalski', title: 'Manager, Show Control Infrastructure', role: 'Manager',
+      bio: 'Hana\'s servers run every nighttime spectacular. Nothing ships during show hours without a change ticket.',
+      look: { skin: '#f8e1cf', hair: 'ponytail', hairColor: '#c9a063', eyes: '#6b6f5c', top: 'button', topColor: '#2b2622', bottom: 'pants', bottomColor: '#5a4636', shoes: 'boots', accessory: 'headphones' },
+      chat: ['The fireworks don\'t care about your excuses. They launch at 9:00.', 'Backups first. Always backups first.', 'If you type rm -rf, read the line twice.'],
+    },
+    samir: {
+      name: 'Samir Aziz', title: 'Site Reliability Engineer (your mentor)', role: 'Mentor',
+      bio: 'Samir can diagnose a sick server from its load average alone. Collects vintage terminals.',
+      look: { skin: '#a8704a', hair: 'buzz', hairColor: '#1c1714', eyes: '#3b2618', facial: 'beard', top: 'hoodie', topColor: '#5a3e2b', bottom: 'pants', bottomColor: '#2b2622', shoes: 'sneakers', accessory: 'glasses', build: 'broad' },
+      chat: ['Read the man page. Then read it again.', 'Pipes are the best idea in computing. Small tools, glued together.', 'Automate the second time you do something.'],
+    },
+    tess: {
+      name: 'Tess Whitaker', title: 'Systems Intern', role: 'Intern', reliability: 0.9,
+      bio: 'Methodical and calm under pressure. Keeps a runbook for everything, including lunch.',
+      look: { skin: '#e7bf9c', hair: 'long', hairColor: '#6f4526', eyes: '#4f6b3a', top: 'sweater', topColor: '#d99a2b', bottom: 'pants', bottomColor: '#2b2622', shoes: 'boots' },
+      chat: ['I write every command I run into a notes file. Future me says thanks.'],
+    },
+    rio: {
+      name: 'Rio Santos', title: 'DevOps Intern', role: 'Intern', reliability: 0.6,
+      bio: 'Types impossibly fast. Occasionally into the wrong terminal.',
+      look: { skin: '#c68b5f', hair: 'curly', hairColor: '#1c1714', eyes: '#3b2618', top: 'tee', topColor: '#3e6b48', bottom: 'shorts', bottomColor: '#5a4636', shoes: 'sneakers', hat: 'cap' },
+      chat: ['I aliased `please` to `sudo`. It feels more polite.'],
+    },
+    noor: {
+      name: 'Noor Haddad', title: 'Site Reliability Intern', role: 'Intern', reliability: 0.95,
+      bio: 'Reads kernel logs recreationally. Nothing gets past Noor.',
+      look: { skin: '#d9a57c', hair: 'bun', hairColor: '#1c1714', eyes: '#3b2618', top: 'blazer', topColor: '#6b3a2e', bottom: 'pants', bottomColor: '#2b2622', shoes: 'flats', accessory: 'glasses' },
+      chat: ['The answer is always in the logs. The question is which log.'],
+    },
+    gabe: {
+      name: 'Gabe Turner', title: 'Show Systems Intern', role: 'Intern', reliability: 0.7,
+      bio: 'Former stagehand who knows every cable in the control booth. Staging environments love to break on him.',
+      look: { skin: '#6b4029', hair: 'short', hairColor: '#1c1714', eyes: '#3b2618', facial: 'goatee', top: 'hivis', bottom: 'pants', bottomColor: '#4b5a3a', shoes: 'boots', build: 'broad' },
+      chat: ['In theater we say "the show must go on." In ops we say "the show must go on, with monitoring."'],
+    },
+  });
+
+  IS.registerTrack({
+    id: 'linux', n: 5, icon: '🐧', lang: 'shell', langLabel: 'Linux / Bash', rate: 32,
+    title: 'Systems Engineering Intern', team: 'Show Control Infrastructure',
+    blurb: 'Run the Linux servers behind the nighttime spectaculars: navigate filesystems, hunt through logs with pipes, fix permissions, manage processes and rescue a full disk before showtime.',
+    skills: ['Linux command line', 'grep / sort / uniq / cut pipelines', 'Permissions & processes', 'Operational safety'],
+    channel: 'show-infra', lab: { name: 'Show Control Server Room', art: 'servers' },
+    cast: { manager: 'hana', mentor: 'samir', interns: ['tess', 'rio', 'noor', 'gabe'] },
+    groups: { g1: { name: 'Log Rotation Toolkit', members: ['tess', 'rio'] }, g2: { name: 'Show Server Health Checker', members: ['noor', 'gabe'] } },
+    incident: 'The show control server\'s disk is almost full and tonight\'s fireworks cues can\'t be written.',
+    scenario: { conflictA: 'a live terminal demo', conflictB: 'a recorded screencast', delay: 'the staging servers are being re-imaged', delayFix: 'a local copy of the server files' },
+    tasks: [
+      {
+        id: 'q1', type: 'quiz', title: 'Change Management & Access', from: 'rosa', day: 1, due: { day: 1, minute: 180 }, effort: 20, kind: 'individual', category: 'Training',
+        brief: '<p>Show servers run live entertainment for thousands of guests. Pass the change-management check (80%+).</p>',
+        hints: ['No risky changes during shows. Backups before changes. Least privilege.'],
+        wiki: '<b>Ops policy:</b> changes need a ticket and a rollback plan; freeze windows during shows; never share credentials.',
+        peer: { who: 'tess', text: 'Every answer is basically "have a rollback plan."' },
+        questions: [
+          { q: 'You want to update show server configs at 8:55 PM, five minutes before fireworks. You:', options: ['Do it quickly.', 'Wait for the change window after the show.', 'Do it but tell no one.', 'Reboot first.'], answer: 1 },
+          { q: 'Before editing a config file on a production server, you should:', options: ['Delete the old one.', 'Back it up so you can roll back.', 'chmod 777 it.', 'Email it to yourself.'], answer: 1 },
+          { q: 'A teammate asks for your password to run one command. You:', options: ['Share it once.', 'Refuse. They should request their own access.', 'Type it for them.', 'Post it in chat.'], answer: 1 },
+          { q: '"Least privilege" means:', options: ['Everyone is root.', 'Accounts get only the access they need.', 'Interns get no access.', 'Passwords are short.'], answer: 1 },
+          { q: 'Your command deleted the wrong directory. First move?', options: ['Hide it.', 'Tell the on-call lead immediately so recovery can start.', 'Recreate it from memory.', 'Log off.'], answer: 1 },
+        ],
+      },
+      IS.T.intro({ channel: 'show-infra', team: 'Show Control Infrastructure', teamKey: 'systems' }),
+      {
+        id: 't1', type: 'terminal', title: 'Terminal Orientation', from: 'mentor', day: 2, due: { day: 3, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>Get your bearings on the show server. Use <code>pwd</code>, <code>ls</code>, <code>cd</code> and <code>cat</code>.</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: 'Print the contents of /srv/showctl/README', check: (sh) => sh.ranOutput('Show Control Server') },
+          { text: 'Create a directory ~/notes', check: (sh) => sh.isDir('/home/intern/notes') },
+          { text: 'Save the output of `whoami` into ~/notes/whoami.txt', check: (sh) => sh.read('/home/intern/notes/whoami.txt') === 'intern\n' },
+          { text: 'List the cue files in /srv/shows/nightly', check: (sh) => sh.ranOutput('03-finale.cue') },
+        ],
+        hints: ['cat /srv/showctl/README', 'mkdir ~/notes', 'whoami > ~/notes/whoami.txt  (the > sends output into a file)'],
+        wiki: '<b>Linux basics:</b> <code>~</code> is your home directory. <code>&gt;</code> writes output to a file (overwriting), <code>&gt;&gt;</code> appends.',
+        peer: { who: 'tess', text: 'Type `help` first. It lists every command this server supports.' },
+      },
+      {
+        id: 't2', type: 'terminal', title: 'Count the Errors', from: 'manager', day: 3, due: { day: 4, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>Before every show, someone checks the log for trouble. In <code>/var/log/showctl/show.log</code>:</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: 'Print how many lines contain ERROR (a single number)', check: (sh) => sh.ran(/grep/) && sh.ranOutput(String(count('ERROR'))) },
+          { text: 'Print how many lines contain WARN', check: (sh) => sh.ran(/WARN/) && sh.ranOutput(String(count('WARN'))) },
+          { text: 'Show the last 3 lines of the log', check: (sh) => sh.ran(/tail/) && sh.ranOutput(LOG[LOG.length - 1]) && sh.ranOutput(LOG[LOG.length - 3]) },
+        ],
+        hints: ['grep -c ERROR /var/log/showctl/show.log counts matching lines.', 'Or pipe: grep ERROR file | wc -l', 'tail -n 3 file'],
+        wiki: '<b>grep:</b> <code>-c</code> count, <code>-i</code> ignore case, <code>-v</code> invert, <code>-n</code> line numbers.',
+        peer: { who: 'noor', text: 'grep -c is the fastest way. wc -l works too.' },
+      },
+      {
+        id: 'r1', type: 'review', title: 'Code Review: Config Refresh Script', from: 'mentor', day: 3, due: { day: 5, minute: 120 }, effort: 40, kind: 'individual', category: 'Code Review',
+        brief: '<p>Rio wrote a script to refresh configs before tonight\'s show. Review it carefully.</p>',
+        code: `#!/bin/bash
+cd /var/log/showctl
+rm -rf *
+cp /home/rio/configs/* /etc/showctl/
+chmod 777 /etc/showctl/*
+echo "done"`,
+        issues: [
+          { text: 'If cd fails, `rm -rf *` runs in whatever directory the script started in. Use `cd … || exit 1` and `set -e`.', real: true },
+          { text: 'rm -rf * deletes the current show.log too, destroying evidence needed for troubleshooting.', real: true },
+          { text: 'chmod 777 makes every config (including secrets) world-writable.', real: true },
+          { text: 'Existing configs are overwritten with no backup and no rollback path.', real: true },
+          { text: 'echo should be replaced with printf in bash scripts.', real: false },
+          { text: 'Bash scripts must end with `exit 0` or they fail.', real: false },
+          { text: 'cp cannot copy more than one file at a time.', real: false },
+        ],
+        keywords: ['cd', 'exit', 'set -e', 'rm -rf', 'log', '777', 'permission', 'backup', 'rollback'],
+        hints: ['Imagine /var/log/showctl doesn\'t exist. Where does rm -rf * run?', 'Who can write a file with mode 777?'],
+        wiki: '<b>Safe scripting:</b> <code>set -euo pipefail</code>, check every cd, back up before overwrite, least privilege on files.',
+        peer: { who: 'rio', text: 'In my defense, it worked on my laptop. (My laptop has no files now.)' },
+      },
+      IS.T.standup({ day: 4, terms: ['log', 'grep', 'server', 'review', 'script', 'terminal'] }),
+      {
+        id: 't3', type: 'terminal', bugfix: true, title: 'Bug Fix: Broken Deploy Script', from: 'manager', day: 4, due: { day: 5, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>🐞 <b>SHOW-812:</b> <code>/opt/deploy/deploy.sh</code> fails every night. It isn\'t executable, and it has a typo in a path (the cues live in <code>/srv/shows</code>). Fix it and run it.</p>',
+        fs: fs({ files: { '/opt/deploy/deploy.sh': { content: DEPLOY, mode: '644' } } }), motd: MOTD,
+        objectives: [
+          { text: 'Make deploy.sh executable by its owner', check: (sh) => ownerX(sh, '/opt/deploy/deploy.sh') },
+          { text: 'Fix the path typo (/srv/show/ → /srv/shows/)', check: (sh) => { const c = sh.read('/opt/deploy/deploy.sh') || ''; return c.includes('/srv/shows/nightly') && !c.includes('/srv/show/nightly'); } },
+          { text: 'Run the script successfully (it prints "deploy complete" with no errors)', check: (sh) => sh.history.some((h) => /deploy\.sh/.test(h.cmd) && !/chmod|sed|cat|ls -l/.test(h.cmd) && h.out.includes('deploy complete') && !/No such file|Permission denied/.test(h.out)) },
+        ],
+        hints: ['chmod +x /opt/deploy/deploy.sh', "sed -i 's#/srv/show/#/srv/shows/#' /opt/deploy/deploy.sh  (any delimiter works; # avoids escaping slashes)", 'Run it with /opt/deploy/deploy.sh or cd /opt/deploy && ./deploy.sh'],
+        wiki: '<b>sed:</b> <code>sed -i \'s/old/new/\' file</code> edits in place. Use a different delimiter when the text contains slashes.',
+        peer: { who: 'gabe', text: 'Check the output: "No such file" means the typo is still there.' },
+      },
+      IS.T.designDoc({ id: 'w-design1', title: 'Log Rotation Toolkit', day: 6, due: { day: 8, minute: 120 }, group: 'g1',
+        brief: 'Old logs pile up and fill the disk. Design a toolkit that archives old logs safely without touching the live log.',
+        terms: ['archive', 'rotate', 'disk', 'retention', 'backup', 'cron', 'log'], termsNeeded: 4 }),
+      {
+        id: 't4', type: 'terminal', title: 'Log Rotation: Archive Old Logs', from: 'manager', day: 6, due: { day: 8, minute: 180 }, effort: 60, kind: 'group', group: 'g1', category: 'Coding',
+        brief: '<p>Your part of the Log Rotation Toolkit: archive rotated logs. Don\'t touch the live <code>show.log</code>!</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: 'Create /var/log/showctl/archive', check: (sh) => sh.isDir('/var/log/showctl/archive') },
+          { text: 'Move every rotated log (*.log.1, *.log.2) from old/ into archive/', check: (sh) => ['show.log.1', 'show.log.2', 'audio.log.1'].every((f) => sh.isFile('/var/log/showctl/archive/' + f)) },
+          { text: 'Leave old/ empty or remove it', check: (sh) => !sh.exists('/var/log/showctl/old') || sh.children('/var/log/showctl/old').length === 0 },
+          { text: 'Keep the live show.log exactly where it is', check: (sh) => sh.read('/var/log/showctl/show.log') === SHOW_LOG },
+        ],
+        hints: ['mkdir /var/log/showctl/archive', 'mv /var/log/showctl/old/* /var/log/showctl/archive/', 'rm -r /var/log/showctl/old  (only once it\'s empty!)'],
+        wiki: '<b>Wildcards:</b> <code>*.log.*</code> matches show.log.1 and audio.log.1. Check with ls before you mv.',
+        peer: { who: 'tess', text: 'I always `ls` the wildcard first, then run the real command.' },
+      },
+      {
+        id: 't5', type: 'terminal', title: 'Back Up the Configs', from: 'mentor', day: 7, due: { day: 9, minute: 120 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>Before tonight\'s change window, back up every config.</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: 'Create /backup/configs', check: (sh) => sh.isDir('/backup/configs') },
+          { text: 'Copy all four .conf files from /etc/showctl into it (identical contents)', check: (sh) => ['main', 'audio', 'lights', 'fireworks'].every((n) => sh.read('/backup/configs/' + n + '.conf') === sh.read('/etc/showctl/' + n + '.conf')) },
+          { text: 'Leave the originals in place', check: (sh) => ['main', 'audio', 'lights', 'fireworks'].every((n) => sh.isFile('/etc/showctl/' + n + '.conf')) },
+          { text: 'Verify with a long listing (ls -l) of the backup directory', check: (sh) => sh.ran(/ls\s+-[a-zA-Z]*l[a-zA-Z]*\s+.*backup/) || sh.history.some((h) => /ls\s+-[a-zA-Z]*l/.test(h.cmd) && h.cwd === '/backup/configs') },
+        ],
+        hints: ['mkdir -p /backup/configs', 'cp /etc/showctl/*.conf /backup/configs/', 'ls -l /backup/configs'],
+        wiki: '<b>cp vs mv:</b> cp duplicates, mv moves. For backups you always want cp.',
+        peer: { who: 'rio', text: 'Do NOT use mv here. Ask me how I know.' },
+      },
+      {
+        id: 'q2', type: 'quiz', title: 'Linux Fundamentals', from: 'mentor', day: 8, due: { day: 8, minute: 180 }, effort: 20, kind: 'individual', category: 'Training',
+        brief: '<p>Samir\'s Linux basics check.</p>',
+        hints: ['Permission digits: r=4, w=2, x=1.', '> overwrites, >> appends.'],
+        wiki: '<b>Permissions:</b> three digits for owner, group, others. 7 = rwx, 6 = rw-, 5 = r-x, 4 = r--.',
+        peer: { who: 'noor', text: 'chmod 644 vs 755 comes up in every interview.' },
+        questions: [
+          { q: 'chmod 755 script.sh gives:', options: ['Everyone full access', 'Owner rwx, group and others r-x', 'Owner read only', 'Nobody access'], answer: 1 },
+          { q: 'What does `cmd > out.txt` do if out.txt exists?', options: ['Appends', 'Overwrites it', 'Errors', 'Renames it'], answer: 1 },
+          { q: 'What does `|` do?', options: ['Logical OR', 'Sends one command\'s output into the next command\'s input', 'Runs in background', 'Comments'], answer: 1 },
+          { q: 'Which command shows running processes?', options: ['ls', 'ps', 'cd', 'df'], answer: 1 },
+          { q: 'An absolute path starts with:', options: ['~', '.', '/', '..'], answer: 2 },
+        ],
+      },
+      IS.T.groupDemo({ day: 8, due: { day: 10, minute: 150 }, project: 'Log Rotation Toolkit', terms: ['archive', 'rotate', 'disk', 'log', 'backup', 'retention'],
+        failQ: 'What happens if the archive disk is full during rotation?', failBest: 'Rotation stops before moving anything, the live log keeps writing, and the on-call engineer gets an alert.' }),
+      IS.T.midpoint({ terms: ['linux', 'terminal'] }),
+      {
+        id: 't6', type: 'terminal', title: 'Projector Inventory Pipeline', from: 'mentor', day: 11, due: { day: 12, minute: 180 }, effort: 60, kind: 'individual', category: 'Coding',
+        brief: '<p><code>/srv/data/projectors.csv</code> lists every projector (<code>id,zone,status</code>). Build pipelines with <code>cut</code>, <code>sort</code>, <code>uniq</code> and <code>grep</code>:</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: 'Print how many projectors are in each zone (uniq -c style: "3 Frontier")', check: (sh) => sh.ranOutput('3 Frontier') && sh.ranOutput('3 Castle') && sh.ranOutput('2 Hub') },
+          { text: 'Save the IDs of OFFLINE projectors (one per line) to ~/offline.txt', check: (sh) => sh.read('/home/intern/offline.txt') === 'P07\nP12\n' },
+        ],
+        hints: ['cut -d, -f2 /srv/data/projectors.csv | sort | uniq -c', 'uniq only collapses ADJACENT lines, so sort first!', 'grep OFFLINE /srv/data/projectors.csv | cut -d, -f1 > ~/offline.txt'],
+        wiki: '<b>Pipelines:</b> <code>cut -d, -f2</code> takes the 2nd comma-separated field; <code>sort | uniq -c</code> counts.',
+        peer: { who: 'noor', text: 'The header line becomes "1 zone". That\'s fine, just ignore it (or grep -v it out).' },
+      },
+      {
+        id: 't7', type: 'terminal', bugfix: true, title: 'Bug Fix: Dangerous Permissions', from: 'manager', day: 12, due: { day: 13, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>🐞 <b>SEC-77:</b> A security scan found <code>/etc/showctl/secrets.env</code> is world-writable, and the tools in <code>/opt/tools</code> aren\'t executable. Fix both.</p>',
+        fs: fs({ files: { '/etc/showctl/secrets.env': { content: 'PYRO_KEY=redacted\n', mode: '666' }, '/opt/tools/check.sh': { content: 'echo check ok\n', mode: '644' }, '/opt/tools/restart.sh': { content: 'echo restarting\n', mode: '644' } } }), motd: MOTD,
+        objectives: [
+          { text: 'secrets.env readable and writable by its owner only (600)', check: (sh) => sh.mode('/etc/showctl/secrets.env') === '600' },
+          { text: 'Both scripts in /opt/tools are 755', check: (sh) => sh.mode('/opt/tools/check.sh') === '755' && sh.mode('/opt/tools/restart.sh') === '755' },
+          { text: 'Confirm with ls -l', check: (sh) => sh.ran(/ls\s+-[a-zA-Z]*l/) },
+        ],
+        hints: ['chmod 600 /etc/showctl/secrets.env', 'chmod 755 /opt/tools/*.sh', 'ls -l /opt/tools'],
+        wiki: '<b>Permissions:</b> 600 = rw------- (owner only). 755 = rwxr-xr-x.',
+        peer: { who: 'gabe', text: '666 on a secrets file. The number of the beast, indeed.' },
+      },
+      IS.T.email({ day: 13, due: { day: 13, minute: 180 }, to: 'Theo Park', toTitle: 'Show Producer', subject: 'Deploy Window Moved',
+        brief: 'Because of the permissions fix, tonight\'s cue deploy moves to tomorrow\'s change window.',
+        terms: ['deploy', 'cue', 'permission|security', 'window', 'date', 'sorry|apolog'] }),
+      {
+        id: 'r2', type: 'review', title: 'Code Review: Cue Upload Script', from: 'intern3', day: 13, due: { day: 14, minute: 180 }, effort: 45, kind: 'individual', category: 'Code Review',
+        brief: '<p>Noor wants a review of the script that uploads cues to the show controller.</p>',
+        code: `#!/bin/bash
+for f in $(ls /srv/shows/*.cue); do
+  scp $f showctl@10.0.0.5:/cues/
+done
+curl http://10.0.0.5/reload?key=SUPERSECRET123`,
+        issues: [
+          { text: 'Looping over $(ls …) breaks on filenames with spaces. Loop over the glob directly: for f in /srv/shows/*.cue.', real: true },
+          { text: '$f is unquoted, so word-splitting and globbing can mangle paths. Use "$f".', real: true },
+          { text: 'A secret key is hard-coded and sent in a URL over plain http.', real: true },
+          { text: 'No error handling (set -e / checking scp), so a half-failed upload still triggers a reload.', real: true },
+          { text: 'for loops don\'t work in bash scripts.', real: false },
+          { text: 'scp is deprecated and must not be used.', real: false },
+          { text: 'IP addresses aren\'t allowed in scripts.', real: false },
+        ],
+        keywords: ['ls', 'glob', 'quote', '"$f"', 'secret', 'http', 'set -e', 'error'],
+        hints: ['What if a cue file is named "castle finale.cue"?', 'What happens if one scp fails?'],
+        wiki: '<b>Bash pitfalls:</b> never parse ls; always quote variables; fail fast with set -euo pipefail.',
+        peer: { who: 'tess', text: 'Someone named a file "finale (final).cue" last year. Chaos.' },
+      },
+      {
+        id: 't8', type: 'terminal', optional: true, title: '⭐ Stretch: Find the Noisiest Service', from: 'mentor', day: 14, due: { day: 17, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p><b>Optional stretch.</b> <code>/var/log/services/</code> has one log per service. Find the service with the most ERROR lines and write its name (e.g. <code>audio</code>) to <code>~/noisiest.txt</code>.</p>',
+        fs: fs({ files: {
+          '/var/log/services/audio.log': 'ERROR a\nINFO b\nERROR c\n',
+          '/var/log/services/lighting.log': 'ERROR x\nERROR y\nERROR z\nERROR w\nINFO ok\n',
+          '/var/log/services/pyro.log': 'INFO ready\nERROR once\n',
+        } }), motd: MOTD,
+        objectives: [
+          { text: 'Count ERROR lines in every service log in one command', check: (sh) => sh.ranOutput('/var/log/services/lighting.log:4') || sh.ranOutput('lighting.log:4') },
+          { text: 'Write the noisiest service name to ~/noisiest.txt', check: (sh) => (sh.read('/home/intern/noisiest.txt') || '').trim() === 'lighting' },
+        ],
+        hints: ['grep -c ERROR /var/log/services/*.log prints file:count for each file.', 'echo lighting > ~/noisiest.txt'],
+        wiki: '<b>grep:</b> with several files, grep prefixes each result with the file name.',
+        peer: { who: 'rio', text: 'grep -c on a wildcard is my favorite trick.' },
+      },
+      IS.T.designDoc({ id: 'w-design2', title: 'Show Server Health Checker', day: 16, due: { day: 17, minute: 180 }, group: 'g2', minWords: 180, metrics: true,
+        brief: 'The capstone: a health checker that finds stuck processes, disk pressure and log errors on show servers before showtime.',
+        terms: ['disk', 'process', 'error', 'alert', 'cron', 'script', 'showtime', 'local copy'], termsNeeded: 5 }),
+      {
+        id: 't9', type: 'terminal', title: 'Capstone: Kill the Stuck Process', from: 'manager', day: 16, due: { day: 19, minute: 180 }, effort: 60, kind: 'group', group: 'g2', category: 'Coding',
+        brief: '<p>The projection renderer is stuck at 99% CPU and lagging the castle projections. Find it with <code>ps</code> and stop it with <code>kill</code>. The watchdog restarts it cleanly. Don\'t kill the wrong process!</p>',
+        fs: fs({ procs: [{ pid: 101, name: 'showctl-main', cpu: 4.2 }, { pid: 215, name: 'dmx-bridge', cpu: 1.1 }, { pid: 342, name: 'audio-mixer', cpu: 6.5 }, { pid: 777, name: 'cue-renderer', cpu: 99.1 }] }), motd: MOTD,
+        objectives: [
+          { text: 'List processes', check: (sh) => sh.ran(/^\s*ps\b/) },
+          { text: 'Stop the stuck cue-renderer', check: (sh) => !sh.procs().some((p) => p.name === 'cue-renderer') },
+          { text: 'Leave showctl-main, dmx-bridge and audio-mixer running', check: (sh) => ['showctl-main', 'dmx-bridge', 'audio-mixer'].every((n) => sh.procs().some((p) => p.name === n)) },
+        ],
+        hints: ['ps shows PID, CPU and command.', 'kill 777'],
+        wiki: '<b>Processes:</b> every process has a PID. <code>kill PID</code> asks it to stop; <code>kill -9</code> forces it.',
+        peer: { who: 'gabe', text: 'Double-check the PID before you hit enter. Killing showctl-main during a show = very bad day.' },
+      },
+      {
+        id: 't10', type: 'terminal', title: 'Capstone: Tidy Temp Files', from: 'intern3', day: 18, due: { day: 20, minute: 180 }, effort: 45, kind: 'individual', category: 'Coding',
+        brief: '<p>Rendering leaves <code>*.tmp</code> files all over <code>/srv</code>. Delete every <code>.tmp</code> file under <code>/srv</code> (any depth) without touching the cue files.</p>',
+        fs: fs({ files: { '/srv/shows/nightly/render1.tmp': 'x', '/srv/shows/parade/render2.tmp': 'x', '/srv/showctl/cache/a.tmp': 'x', '/srv/showctl/cache/keep.dat': 'keep' } }), motd: MOTD,
+        objectives: [
+          { text: 'Find the .tmp files first (find … -name)', check: (sh) => sh.ran(/find .*-name/) },
+          { text: 'No .tmp files remain under /srv', check: (sh) => !sh.walk('/srv').some((p) => p.endsWith('.tmp')) },
+          { text: 'All five .cue files and keep.dat are still there', check: (sh) => sh.walk('/srv').filter((p) => p.endsWith('.cue')).length === 5 && sh.isFile('/srv/showctl/cache/keep.dat') },
+        ],
+        hints: ['find /srv -name "*.tmp"', 'find /srv -name "*.tmp" -delete'],
+        wiki: '<b>find:</b> always run the search without <code>-delete</code> first and check the list.',
+        peer: { who: 'noor', text: 'Quote the pattern: -name "*.tmp". Otherwise the shell expands it first.' },
+      },
+      {
+        id: 't11', type: 'terminal', urgent: true, bugfix: true, title: '🚨 URGENT: Show Server Disk Full', from: 'manager', day: 22, due: { day: 22, minute: 120 }, effort: 40, kind: 'individual', category: 'Coding',
+        brief: '<p>🚨 <b>SEV-2:</b> <code>df</code> reports the root disk at 98% and tonight\'s fireworks cues can\'t be written. Free space <b>by 11:00 AM</b> without deleting anything the show needs. (Hint: a debug log was left on at max verbosity.)</p>',
+        fs: fs({ files: { '/var/log/showctl/debug.log': 'DEBUG ' + 'x'.repeat(60000) + '\n' }, capacity: 64000 }), motd: MOTD,
+        objectives: [
+          { text: 'Check disk usage (df) and find what\'s big (du or ls -lS)', check: (sh) => sh.ran(/\bdf\b/) && sh.ran(/\bdu\b|ls\s+-[a-zA-Z]*S/) },
+          { text: 'Remove or truncate the runaway debug.log', check: (sh) => !sh.exists('/var/log/showctl/debug.log') || sh.size('/var/log/showctl/debug.log') < 1000 },
+          { text: 'Keep show.log and every config file', check: (sh) => sh.read('/var/log/showctl/show.log') === SHOW_LOG && ['main', 'audio', 'lights', 'fireworks'].every((n) => sh.isFile('/etc/showctl/' + n + '.conf')) },
+        ],
+        hints: ['df -h shows usage. du -a /var/log | sort -n shows the biggest files last.', 'ls -lS /var/log/showctl sorts by size.', 'Truncate with: > /var/log/showctl/debug.log  (keeps the file, frees the space)'],
+        wiki: '<b>Incident runbook:</b> free space safely: truncate runaway logs rather than deleting random files. Then fix the log level.',
+        peer: { who: 'gabe', text: 'Pyro techs are on the radio asking when they can load cues. 😬' },
+      },
+      IS.T.postmortem({ title: 'Show Server Disk Full', day: 22, due: { day: 23, minute: 180 }, terms: ['disk', 'debug', 'log level|verbos', 'truncat', 'monitor|alert', 'rotation'] }),
+      {
+        id: 't12', type: 'terminal', title: 'Capstone: Health Check Script', from: 'intern4', day: 21, due: { day: 23, minute: 180 }, effort: 60, kind: 'group', group: 'g2', category: 'Coding',
+        brief: '<p>Create an executable script <code>~/health.sh</code> that prints the line <code>ERROR count:</code> followed by the number of ERROR lines in <code>/var/log/showctl/show.log</code>. Then run it.</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: '~/health.sh exists and is executable', check: (sh) => sh.isFile('/home/intern/health.sh') && ownerX(sh, '/home/intern/health.sh') },
+          { text: 'It counts ERROR lines with grep', check: (sh) => /grep/.test(sh.read('/home/intern/health.sh') || '') },
+          { text: 'Running it prints "ERROR count:" and the right number', check: (sh) => sh.history.some((h) => /health\.sh/.test(h.cmd) && !/echo|chmod|cat/.test(h.cmd) && h.out.includes('ERROR count:') && h.out.split('\n').some((l) => l.trim() === String(count('ERROR')))) },
+        ],
+        hints: ['echo \'echo "ERROR count:"\' > ~/health.sh', 'echo \'grep -c ERROR /var/log/showctl/show.log\' >> ~/health.sh', 'chmod +x ~/health.sh && ~/health.sh'],
+        wiki: '<b>Scripts:</b> a script is just commands in a file. Make it executable with chmod +x, then run it by path.',
+        peer: { who: 'noor', text: 'Single quotes stop the shell from interpreting the inner double quotes.' },
+      },
+      {
+        id: 't13', type: 'terminal', title: 'Capstone: Cue Checksum Audit', from: 'mentor', day: 24, due: { day: 26, minute: 180 }, effort: 45, kind: 'group', group: 'g2', category: 'Coding',
+        brief: '<p>Build a quick audit of the show\'s cues: a sorted list of every <code>.cue</code> file under <code>/srv/shows</code> (full paths) saved to <code>~/cue-audit.txt</code>, plus a count of how many there are.</p>',
+        fs: fs(), motd: MOTD,
+        objectives: [
+          { text: '~/cue-audit.txt lists all five cue paths, sorted', check: (sh) => sh.read('/home/intern/cue-audit.txt') === ['/srv/shows/nightly/01-opening.cue', '/srv/shows/nightly/02-castle.cue', '/srv/shows/nightly/03-finale.cue', '/srv/shows/parade/01-start.cue', '/srv/shows/parade/02-floats.cue'].join('\n') + '\n' },
+          { text: 'Print how many cue files there are', check: (sh) => sh.ran(/wc/) && sh.ranOutput('5') },
+        ],
+        hints: ['find /srv/shows -name "*.cue" | sort > ~/cue-audit.txt', 'wc -l ~/cue-audit.txt  (or pipe find into wc -l)'],
+        wiki: '<b>Audits:</b> find + sort gives a stable, diff-able inventory.',
+        peer: { who: 'gabe', text: 'We diff this file every night to spot missing cues.' },
+      },
+      IS.T.status({ day: 25, terms: ['capstone', 'disk', 'postmortem', 'health', 'script', 'server'] }),
+      IS.T.readme({ day: 26, due: { day: 28, minute: 180 }, project: 'Show Server Health Checker', terms: ['health.sh', 'grep', 'disk', 'process', 'cron', 'log'] }),
+      IS.T.finalPres({ project: 'Show Server Health Checker', terms: ['disk', 'process', 'log', 'alert', 'show', 'guest', 'script'], questions: [
+        { who: 'harriet', q: 'Why should a guest care about a server health checker?', options: [
+          { text: 'Because the fireworks, music and projections guests love depend on these servers. Catching a full disk at 4 PM instead of 8:59 PM means the show goes on.', pts: 10 },
+          { text: 'They shouldn\'t, it\'s internal.', pts: 2 },
+          { text: 'Faster servers.', pts: 3 },
+          { text: 'It saves money.', pts: 4 }] },
+        { who: 'harriet', q: 'Could the checker itself cause an outage?', options: [
+          { text: 'It\'s read-only by default: it reports and alerts. Any fix (like killing a process) needs a human to confirm, and it never runs during a show.', pts: 10 },
+          { text: 'No, scripts are safe.', pts: 1 },
+          { text: 'Maybe, but it\'s fast.', pts: 2 },
+          { text: 'We didn\'t think about that.', pts: 0 }] },
+        { who: 'manager', q: 'What\'s the biggest risk?', options: [
+          { text: 'Alert fatigue. Too many false alarms and people ignore it. We tuned thresholds on a local copy of real server data.', pts: 10 },
+          { text: 'There are none.', pts: 0 },
+          { text: 'Linux might change.', pts: 2 },
+          { text: 'Gabe\'s staging server.', pts: 1 }] },
+        { who: 'mentor', q: 'How would you run it on 200 servers?', options: [
+          { text: 'Schedule it with cron on every host, ship results to central monitoring, and roll out with our config management in stages.', pts: 10 },
+          { text: 'SSH into each one by hand.', pts: 1 },
+          { text: 'Buy more servers.', pts: 2 },
+          { text: 'Email the script around.', pts: 1 }] },
+      ] }),
+      IS.T.selfEval({ day: 30, due: { day: 31, minute: 180 }, terms: ['linux', 'capstone', 'disk', 'team', 'terminal', 'deadline'] }),
+    ],
+    interview: {
+      coding: [
+        { id: 'i-lx1', type: 'terminal', title: 'Find the Config', fs: fs(), motd: MOTD,
+          brief: '<p>Somewhere under <code>/etc</code> a file contains the setting <code>cue_offset</code>. Print that file\'s path using a single search command.</p>',
+          objectives: [{ text: 'Print the path of the file containing cue_offset', check: (sh) => sh.ranOutput('/etc/showctl/fireworks.conf') || sh.ranOutput('/etc/showctl/fireworks.conf:cue_offset=-120') }] },
+        { id: 'i-lx2', type: 'terminal', title: 'Count the Warnings', fs: fs(), motd: MOTD,
+          brief: '<p>Print how many lines in <code>/var/log/showctl/show.log</code> contain <code>WARN</code>.</p>',
+          objectives: [{ text: 'Print the WARN count', check: (sh) => sh.ran(/WARN/) && sh.ranOutput(String(count('WARN'))) }] },
+        { id: 'i-lx3', type: 'terminal', title: 'Latest Log Lines Report', fs: fs(), motd: MOTD,
+          brief: '<p>Create <code>/tmp/report</code> containing exactly the last 3 lines of <code>/var/log/showctl/show.log</code>.</p>',
+          objectives: [{ text: '/tmp/report has the last 3 log lines', check: (sh) => sh.read('/tmp/report') === LOG.slice(-3).join('\n') + '\n' }] },
+      ],
+      concepts: [
+        { q: 'What does chmod 644 file do?', options: ['rwxr-xr-x', 'rw-r--r--', 'rw-------', 'rwxrwxrwx'], answer: 1 },
+        { q: 'Difference between > and >>?', options: ['None', '> overwrites, >> appends', '> appends, >> overwrites', '>> is a pipe'], answer: 1 },
+        { q: 'Which counts lines containing "ERROR" in log.txt?', options: ['grep -c ERROR log.txt', 'ls ERROR log.txt', 'cat -c log.txt', 'find ERROR'], answer: 0 },
+        { q: 'Why `sort` before `uniq -c`?', options: ['uniq only merges adjacent duplicates', 'It\'s faster', 'uniq requires numbers', 'No reason'], answer: 0 },
+        { q: 'What does `cd ..` do?', options: ['Goes home', 'Goes up one directory', 'Lists files', 'Deletes the directory'], answer: 1 },
+        { q: 'How do you run an executable script in the current directory?', options: ['run script.sh', './script.sh', 'script', 'cd script.sh'], answer: 1 },
+        { q: 'Which command shows disk space?', options: ['du -s', 'df -h', 'ps', 'top -d'], answer: 1 },
+        { q: 'The safest first step before `find … -delete`?', options: ['Run it with sudo', 'Run the find without -delete and review the list', 'Reboot', 'chmod 777'], answer: 1 },
+      ],
+    },
+    training: {
+      lessons: [
+        { title: 'Navigating and reading files', html: '<pre>pwd            # where am I?\nls -l /etc     # long listing\ncd /var/log    # move\ncat file       # print\nhead -n 5 f    # first 5 lines\ntail -n 5 f    # last 5 lines</pre>' },
+        { title: 'grep and pipelines', html: '<pre>grep -c ERROR show.log              # count\ngrep -r cue_offset /etc             # search a tree\ncut -d, -f2 data.csv | sort | uniq -c\ntail -n 3 show.log > /tmp/report    # save output</pre><p>Each tool does one job; pipes glue them together.</p>' },
+        { title: 'Permissions and safety', html: '<p><code>chmod 755</code> = rwxr-xr-x, <code>chmod 600</code> = rw-------. Always preview destructive commands (find without -delete, ls the wildcard before rm).</p>' },
+      ],
+    },
+  });
+})();

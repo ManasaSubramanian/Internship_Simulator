@@ -53,13 +53,13 @@ IS.ceremony = (function () {
 
   // Maya (spot award) or Rosa (rising star) presents a single honor.
   function honor(a, c, done) {
-    const presenter = a.id === 'spot' ? 'maya' : 'rosa';
+    const presenter = a.id === 'spot' ? IS.engine.cast().manager : 'rosa';
     const intro = a.id === 'spot'
       ? 'Before everyone logs off for the weekend, one quick thing. Every Friday we recognize someone whose work really sparkled this week…'
       : 'Every summer, we recognize interns who are off to an exceptional start at the midpoint…';
     const el = stage(`<div class="center">
       <p class="scene-place">${a.id === 'spot' ? '🎉 Friday Team Huddle' : '🌟 Intern Program All-Hands'}</p>
-      ${IS.ui.speakerHtml(presenter, intro)}
+      ${IS.present.speaker(presenter, intro)}
       <div class="envelope" style="margin:20px 0">✉️</div>
       <div class="reveal"><button class="btn gold big" data-c="open">Open the envelope</button></div>
     </div>`);
@@ -72,8 +72,8 @@ IS.ceremony = (function () {
           <h2 style="color:var(--gold-2)">${U.esc(st().player.name)}!</h2>
           <p class="muted">${U.esc(c.note || '')}</p>
           ${a.id === 'spot' ? '<p>🎁 A <b>$50 bonus</b> has been added to this week\'s paycheck.</p>' : ''}
-          <div class="audience">${['jordan', 'sam', 'priya', 'tyler', 'dev'].map((id) => `<div class="seat">${IS.avatar.forCharacter(id, 48, { mood: 'wow' })}<div>👏</div></div>`).join('')}</div>
-          <div class="speech card flat" style="margin-top:16px;text-align:left"></div>`;
+          <div class="audience">${IS.engine.cast().interns.concat([IS.engine.cast().mentor]).map((id) => `<div class="seat">${IS.people.portrait(id, 64, 'wow')}<div>👏</div></div>`).join('')}</div>
+          <div class="speech panel" style="margin-top:16px;text-align:left"></div>`;
         speech(r, () => {
           closeStage();
           done();
@@ -91,11 +91,11 @@ IS.ceremony = (function () {
 
     function intro() {
       const el = stage(`<div class="center">
-        <p class="scene-place">🎭 Main Screening Room · Summer Intern Awards</p>
-        <div class="castle">🏰</div>
-        <h1 class="logo">Summer Intern Awards</h1>
-        ${IS.ui.speakerHtml('rosa', 'Welcome, everyone, to the Summer Intern Awards! Six weeks, five incredible interns, and seven awards. Nominees are based on everyone\'s actual work this summer. Let\'s get started!')}
-        <div class="audience">${['harriet', 'maya', 'dev', 'jordan', 'sam', 'priya', 'tyler'].map((id) => `<div class="seat">${IS.avatar.forCharacter(id, 52)}<div>${IS.characters[id].short}</div></div>`).join('')}</div>
+        <p class="scene-place">🎭 Main Screening Room · Intern Awards Night</p>
+        <div style="font-size:3.4rem">🏰</div>
+        <h1 class="logo">Intern Awards Night</h1>
+        ${IS.present.speaker('rosa', 'Welcome to Intern Awards Night for ' + IS.engine.track().team + '! One hundred hours, five incredible interns, seven awards. Nominees are based on everyone\'s actual work. Let\'s get started!')}
+        <div class="audience">${['harriet', IS.engine.cast().manager, IS.engine.cast().mentor].concat(IS.engine.cast().interns).map((id) => `<div class="seat">${IS.people.portrait(id, 64)}<div>${IS.characters[id].short}</div></div>`).join('')}</div>
         <p style="margin-top:20px"><button class="btn gold big" data-c="next">Begin the ceremony ✨</button></p></div>`);
       bind(el, { next });
     }
@@ -111,7 +111,7 @@ IS.ceremony = (function () {
         <h1>${a.name}</h1>
         <p class="muted">${a.desc} <br><span class="small">Judged on: ${a.metric}</span></p>
         <h3 style="margin-top:14px">The nominees are…</h3>
-        <div class="nominees">${c.nominees.map((n) => `<div class="nominee" data-id="${n.id}">${IS.avatar.forCharacter(n.id, 70)}<div><b>${U.esc(who(n.id))}</b></div></div>`).join('')}</div>
+        <div class="nominees">${c.nominees.map((n) => `<div class="nominee" data-id="${n.id}">${IS.people.of(n.id, { height: 170 })}<div><b>${U.esc(who(n.id))}</b></div></div>`).join('')}</div>
         <div class="envelope">✉️</div>
         <div class="reveal" style="margin-top:12px"><button class="btn gold big" data-c="open">And the award goes to…</button></div></div>`);
       bind(el, { open: () => reveal(el, c, a) });
@@ -130,7 +130,7 @@ IS.ceremony = (function () {
           IS.ui.confetti(80);
           r.innerHTML = `<div class="trophy-big">🏆</div><h1 style="color:var(--gold-2)">${U.esc(st().player.name)}!</h1>
             <p>Your score: <b>${you.score.toFixed(1)}</b>, the highest in the cohort.</p>
-            <div class="speech card flat" style="text-align:left;margin-top:12px"></div>`;
+            <div class="speech panel" style="text-align:left;margin-top:12px"></div>`;
           speech(r, next);
         } else {
           const w = IS.characters[c.winner];
@@ -145,9 +145,9 @@ IS.ceremony = (function () {
 
     function outro() {
       const el = stage(`<div class="center">
-        <div class="castle">🎆</div>
+        <div style="font-size:3.4rem">🎆</div>
         <h1>That's a wrap!</h1>
-        ${IS.ui.speakerHtml('rosa', wins.length
+        ${IS.present.speaker('rosa', wins.length
           ? `Congratulations to all of our winners, and to ${st().player.name} for taking home ${wins.length} award${wins.length > 1 ? 's' : ''}!`
           : `Congratulations to all our winners, and thank you ${st().player.name} for an amazing summer. Every one of you should be proud.`)}
         <div class="row" style="justify-content:center;margin:14px 0">${wins.map((c) => { const a = IS.awards.byId(c.id); return `<span class="pill gold">${a.icon} ${a.name}</span>`; }).join('') || '<span class="muted">No trophies this time, but plenty of experience.</span>'}</div>

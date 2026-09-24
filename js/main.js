@@ -3,30 +3,26 @@
   const U = IS.util;
   const E = IS.engine;
   const ui = IS.ui;
-  const V = IS.views;
   const st = () => IS.state.get();
 
   const HOW_TO = `
-    <p><b>Your job:</b> survive and thrive through a 6-week (30 workday) internship as a Software Engineering Intern on the Ride Systems Software team.</p>
-    <h3>⏱️ Time &amp; pay</h3>
-    <ul><li>Each workday is <b>9:00 AM – 12:00 PM</b> (3 paid hours at <b>$24/hr</b>). Clock in to start, and the shift ends automatically at noon.</li>
-    <li>Everything takes time: meetings, working, asking for help, coffee runs, chats.</li>
-    <li>Paychecks land every <b>Friday</b> (after taxes). Clocking out early means fewer paid hours.</li></ul>
-    <h3>📋 Assignments</h3>
-    <ul><li>Tasks arrive in your inbox and Task Board: <b>coding</b> (write real JavaScript that is tested), <b>code reviews</b>, <b>writing</b>, <b>training quizzes</b>, and <b>presentations</b>, both individual and group.</li>
-    <li>Log enough <b>focus time</b> (Work 15/30/60m) before submitting. Energy and morale affect how productive that time is.</li>
-    <li>Everything is graded against a rubric, and you'll see the full breakdown.</li></ul>
-    <h3>⚠️ Deadlines</h3>
-    <ul><li>Late work: <b>−10% per workday</b> and a <b>$10</b> pay adjustment. More than 2 workdays late = <b>missed</b> (0% and another $25).</li>
-    <li>Ask Maya for an <b>extension before</b> the deadline. Good relationships and a clean record help.</li></ul>
-    <h3>🙋 Help</h3>
-    <ul><li>Ask <b>Dev</b> (mentor) for hints, ask a <b>fellow intern</b>, or <b>search the wiki</b>. Asking for help never lowers your grade, and it counts toward the Curious Mind award.</li></ul>
-    <h3>👥 Group projects</h3>
-    <ul><li>Your choices in meetings and conflicts change <b>team health</b>, which affects your group grade and presentations.</li></ul>
-    <h3>🛍️ Store</h3>
-    <ul><li>Buy outfits and accessories, desk upgrades (some boost productivity), café treats (energy, only while clocked in), and outings or trips (morale, only after work).</li></ul>
-    <h3>🏆 Awards</h3>
-    <ul><li>Unlock achievements, earn weekly <b>Pixie Dust Spot Awards</b> ($50 bonus), the midpoint <b>Rising Star</b>, and compete in the final <b>Summer Intern Awards</b> ceremony. Then find out if you get a return offer!</li></ul>`;
+    <p><b>Your goal:</b> complete all <b>10 internships</b> and earn a full-time offer. Each internship uses a different technology: JavaScript → Python → Data Science → C++ → Linux → SQL → Web → Machine Learning → DevOps → a full-stack capstone.</p>
+    <h3>🎤 Interviews</h3>
+    <ul><li>Before each internship you interview: a <b>behavioral round</b> (STAR-style questions + a written answer) and a <b>technical round</b> (concept questions + a timed live problem).</li>
+    <li>Score 70+ on each round to get the offer. Didn't pass? You get <b>interview training</b> (lessons + practice). Finish it and retry as often as you like; each training adds a prep bonus.</li>
+    <li>A <b>return offer</b> at the end of an internship moves you to the next one and waives its behavioral round. No offer? Reapply for the same internship.</li></ul>
+    <h3>🏢 The studio</h3>
+    <ul><li><b>Click the floor</b> to walk, or use <b>WASD / arrow keys</b>. Walk up to people and objects and press <b>E</b> (or click them) to interact. The bar at the bottom walks you to key places.</li>
+    <li>Badge in with <b>Marcus</b> at security to start your day. Your <b>computer</b> is at your desk: To-Do list, mail, calendar, HR portal and team directory.</li>
+    <li>Talk to your <b>mentor</b> and fellow interns for help, your <b>manager</b> for feedback and extensions, <b>Gus</b> for coffee, <b>Lena</b> for IT, and <b>Rosa</b> for awards.</li></ul>
+    <h3>⏱️ Time & pay</h3>
+    <ul><li>Each internship is <b>100 hours</b>: 3 hours a day (9:00 AM – 12:00 PM) for 33 days, plus a 1-hour final day for reviews and the awards ceremony.</li>
+    <li>Paid hourly (the rate rises with each internship), every <b>Friday</b>, after taxes. Leaving early means fewer paid hours.</li></ul>
+    <h3>📋 Work & deadlines</h3>
+    <ul><li>Log <b>focus time</b> on an assignment, do the work, then submit. Everything is graded with a visible rubric.</li>
+    <li>Late work: <b>−10% per workday</b> and a <b>$10</b> pay adjustment. More than 2 workdays late = <b>missed</b> (0% and another $25). Ask for an extension <i>before</i> the deadline.</li></ul>
+    <h3>🛍️ Spending</h3>
+    <ul><li>Studio Store (lobby): outfits, hats, accessories and desk upgrades. Café: energy. From home: outings and trips for morale.</li></ul>`;
 
   function showHelp() {
     ui.modal({ title: '❓ How to play', html: HOW_TO, wide: true, buttons: [{ label: 'Got it!', cls: 'primary' }] });
@@ -43,7 +39,7 @@
         try {
           IS.state.importJSON(txt);
           ui.toast('Save imported!', 'good');
-          ui.go('desk');
+          ui.render();
         } catch (e) {
           ui.toast('Could not import: ' + e.message, 'bad');
         }
@@ -56,157 +52,133 @@
     const blob = new Blob([IS.state.exportJSON()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'imagineer-intern-save-day' + st().day + '.json';
+    a.download = 'internship-simulator-save.json';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
+  function restart() {
+    ui.modal({
+      title: 'Start a new career?',
+      html: '<p>This permanently deletes your progress in this browser. Export a save first if you want to keep it.</p>',
+      buttons: [{ label: 'Cancel', cls: 'ghost' }, { label: 'Delete & restart', cls: 'danger', onClick: (c) => { c(); IS.state.clear(); IS.home.resetDraft(); ui.setScreen('title'); } }],
+    });
+  }
+
   function menu() {
     ui.modal({
-      title: '⚙️ Save & menu',
-      html: `<p>Your progress saves automatically in this browser. You can also export a save file to keep it safe or move it to another device.</p>`,
+      title: '☰ Menu',
+      html: '<p>Progress saves automatically in this browser. Export a save file to back it up or move it to another device.</p>',
       buttons: [
+        { label: '❓ How to play', onClick: (c) => { c(); showHelp(); } },
         { label: '💾 Export save', onClick: (c) => { c(); exportSave(); } },
         { label: '📂 Import save', onClick: (c) => { c(); importSave(); } },
-        { label: '🗑️ Restart internship', cls: 'danger', onClick: (c) => { c(); restart(); } },
+        { label: '🗑️ New career', cls: 'danger', onClick: (c) => { c(); restart(); } },
         { label: 'Close', cls: 'primary' },
       ],
     });
   }
 
-  function restart() {
-    ui.modal({
-      title: 'Start over?',
-      html: '<p>This permanently deletes your current internship progress in this browser. Export a save first if you want to keep it.</p>',
-      buttons: [{ label: 'Cancel', cls: 'ghost' }, { label: 'Delete & restart', cls: 'danger', onClick: (c) => { c(); IS.state.clear(); V.draft = null; ui.go('title'); } }],
-    });
-  }
+  const spot = (k) => IS.office.SPOTS[k];
+  const W = IS.workspace.actions;
 
   const actions = {
-    go: (arg) => {
-      const [name, sub] = String(arg).split('|');
-      if (name === 'store' && sub) V.local.storeTab = sub;
-      ui.go(name);
-    },
     help: showHelp,
     menu,
-    newGame: () => ui.go('creator'),
-    toTitle: () => ui.go('title'),
-    continue: () => {
-      if (IS.state.load()) ui.go('desk');
-      else ui.toast('No save found', 'bad');
-    },
+    newGame: () => ui.setScreen('creator'),
+    toTitle: () => ui.setScreen('title'),
+    continue: () => { if (IS.state.load()) ui.render(); else ui.toast('No save found', 'bad'); },
     importSave,
     exportSave,
     restart,
-    draftAvatar: (arg) => {
+    draftLook: (arg) => {
       const [k, v] = arg.split('|');
-      V.draft.avatar[k] = v;
+      IS.home.draft().look[k] = v;
       ui.render();
     },
     startGame: () => {
-      const d = V.draft;
+      const d = IS.home.draft();
       const name = (d.name || '').trim();
       if (!name) return ui.toast('Please enter your name.', 'bad');
-      IS.state.newGame({ name, school: (d.school || '').trim() || 'State University', major: (d.major || '').trim() || 'Computer Science', avatar: Object.assign({}, d.avatar) });
-      V.draft = null;
-      ui.go('desk');
-      setTimeout(() => ui.modal({
-        title: `Welcome, ${U.esc(name)}! ✨`,
-        html: `<p>You just accepted a <b>Software Engineering Internship</b> on the Ride Systems Software team. Your first day starts now.</p>` + HOW_TO,
-        wide: true,
-        buttons: [{ label: 'Let\'s go! Clock in →', cls: 'gold', onClick: (c) => { c(); ui.startDay(); } }],
-      }), 50);
+      IS.state.newGame({ name, school: (d.school || '').trim() || 'State University', major: (d.major || '').trim() || 'Computer Science', look: Object.assign({}, d.look) });
+      IS.home.resetDraft();
+      ui.render();
+      setTimeout(() => ui.modal({ title: `Welcome, ${U.esc(name)}! ✨`, html: '<p>Your application for your first internship is in. First step: the interview.</p>' + HOW_TO, wide: true, buttons: [{ label: 'Let\'s go!', cls: 'gold' }] }), 50);
     },
-    clockIn: () => ui.startDay(),
-    clockOut: () => ui.confirmClockOut(),
-    openTask: (id) => ui.go('task', id),
-    taskTab: (t) => { V.local.taskTab = t; ui.render(); },
-    storeTab: (t) => { V.local.storeTab = t; ui.render(); },
+    // office & day
+    travel: (k) => {
+      const [x, y] = spot(k);
+      IS.office.walkTo(x, y, () => {
+        if (k === 'desk') ui.interact('desk');
+        else if (k === 'exit') ui.interact('door');
+      });
+    },
+    openComputer: () => {
+      const [x, y] = spot('desk');
+      IS.office.walkTo(x, y, () => ui.interact('desk'));
+    },
+    closeComputer: () => ui.closeComputer(),
+    goToWork: () => ui.goToWork(),
+    outings: () => IS.computer.storeModal(['experience']),
+    shopOnline: () => IS.computer.storeModal(['outfit', 'hat', 'accessory', 'desk']),
+    wardrobe: () => IS.home.wardrobe(),
+    awards: () => IS.computer.awardsModal(),
+    // computer apps
+    app: (arg) => {
+      const [app, a] = String(arg).split('|');
+      ui.setApp(app, a);
+    },
+    todoTab: (t) => { IS.computer.local.todoTab = t; ui.render(); },
+    hrTab: (t) => { IS.computer.local.hrTab = t; ui.render(); },
     openMail: (id) => {
-      const m = st().inbox.find((x) => x.id === id);
+      const m = st().job.inbox.find((x) => x.id === id);
       if (m) m.read = true;
-      V.local.openMail = V.local.openMail === id ? null : id;
+      IS.computer.local.openMail = IS.computer.local.openMail === id ? null : id;
       IS.state.save();
       ui.render();
     },
-    readAll: () => {
-      st().inbox.forEach((m) => { m.read = true; });
-      ui.after();
-    },
-    walk: () => {
-      if (!st().clockedIn) return;
-      E.applyEffects({ energy: 8, morale: 2 });
-      E.spend(10);
-      ui.toast('🚶 A lap around the lot. Palm trees, sunshine, a glimpse of a castle spire. +energy', 'good');
-      ui.after();
-    },
-    chat: (id) => {
-      const res = E.chat(id);
-      ui.modal({ title: '💬 ' + IS.characters[id].name, html: ui.speakerHtml(id, res.text), buttons: [{ label: 'Thanks!', cls: 'primary', onClick: (c) => { c(); ui.after(); } }] });
-    },
-    buy: (id) => {
-      const res = E.buy(id);
-      ui.toast(res.text, res.ok ? 'good' : 'bad');
-      ui.after();
-    },
-    equip: (id) => {
-      E.equip(id);
-      ui.after();
-    },
-    setAvatar: (arg) => {
-      const [k, v] = arg.split('|');
-      st().player.avatar[k] = v;
-      ui.after();
-    },
+    readAll: () => { st().job.inbox.forEach((m) => { m.read = true; }); ui.after(); },
+    // workspace
     work: (arg) => {
       const [id, m] = arg.split('|');
-      const res = E.workOn(id, +m);
-      if (res) ui.toast(`⏱️ Worked ${res.used} min → +${Math.round(res.gained)} min of progress`, 'good');
+      const r = E.workOn(id, +m);
+      if (r) ui.toast(`⏱️ Worked ${r.used} min → +${Math.round(r.gained)} min of progress`, 'good');
       ui.after();
     },
-    runTests: (id) => IS.work.runTests(id),
-    resetCode: (id) => IS.work.resetCode(id),
-    submit: (id) => IS.work.submit(id),
-    taskHelp: (arg) => {
-      const [kind, id] = arg.split('|');
-      IS.work.help(kind, id);
-    },
-    slideAdd: (id) => IS.work.slideAdd(id),
-    slideDel: (arg) => {
-      const [id, i] = arg.split('|');
-      IS.work.slideDel(id, +i);
-    },
-    slideMove: (arg) => {
-      const [id, i, d] = arg.split('|');
-      IS.work.slideMove(id, +i, +d);
-    },
+    runTests: (id) => W.runTests(id),
+    runSql: (id) => W.runSql(id),
+    runWeb: (id) => W.runWeb(id),
+    runYaml: (id) => W.runYaml(id),
+    resetCode: (id) => W.resetCode(id),
+    resetShell: (id) => W.resetShell(id),
+    submit: (id) => W.submit(id),
+    taskHelp: (arg) => { const [kind, id] = arg.split('|'); W.help(kind, id); },
+    slideAdd: (id) => W.slideAdd(id),
+    slideDel: (arg) => { const [id, i] = arg.split('|'); W.slideDel(id, +i); },
+    slideMove: (arg) => { const [id, i, d] = arg.split('|'); W.slideMove(id, +i, +d); },
   };
+  Object.keys(IS.interview.actions).forEach((k) => { actions[k] = IS.interview.actions[k]; });
 
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-act]');
     if (!el || el.disabled) return;
-    // Don't let clicks inside an open mail's body re-toggle it (except its buttons).
     if (el.classList.contains('mail') && e.target.closest('button') && e.target.closest('button') !== el) return;
     const fn = actions[el.dataset.act];
     if (fn) {
       e.preventDefault();
+      e.stopPropagation();
       fn(el.dataset.arg);
     }
   });
   document.addEventListener('keydown', (e) => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.task-row[data-act]')) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.item-row[data-act]')) {
       e.preventDefault();
       e.target.click();
     }
+    if (e.key === 'Escape' && ui.overlay() && !document.querySelector('.modal-back') && !document.querySelector('.stage')) ui.closeComputer();
   });
+  window.addEventListener('resize', () => { if (IS.office.isMounted()) IS.office.refresh(); });
 
-  // Boot: resume a save if one exists, otherwise show the title screen.
-  if (IS.state.load()) {
-    const s = st();
-    // A shift that was interrupted by closing the tab just continues.
-    ui.go(s.over ? 'end' : 'desk');
-  } else {
-    ui.go('title');
-  }
+  IS.state.load();
+  ui.render();
 })();

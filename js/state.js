@@ -1,48 +1,57 @@
-// Save data: one slot in localStorage, plus JSON export/import.
+// Save data (one slot in localStorage + JSON export/import).
+// Top level = the player's whole career; `job` = the internship in progress.
 IS.state = (function () {
-  const KEY = 'imagineer-intern-save-v1';
+  const KEY = 'imagineer-intern-save-v2';
   let S = null;
 
   function fresh(player) {
     return {
-      version: 1,
+      version: 2,
       seed: Math.floor(Math.random() * 1e9),
-      player: player,
+      player,
       equipped: { outfit: 'tee', hat: null, accessory: null },
       owned: ['tee'],
       desk: [],
+      wallet: 150,
+      rel: {},
+      awards: [],
+      scrapbook: [],
+      lifetime: { earned: 0, hours: 0, interviews: 0 },
+      career: { level: 0, phase: 'interview', returnOffer: false, history: [] },
+      interview: null,
+      job: null,
+      pos: { x: 160, y: 620 },
+      pendingCeremonies: [],
+    };
+  }
+
+  function newJob(level, track) {
+    return {
+      level,
+      trackId: track.id,
       day: 1,
       minute: 0,
       clockedIn: false,
-      over: false,
-      rate: 24,
-      wallet: 100,
+      rate: track.rate,
       energy: 100,
       morale: 70,
       period: { days: [], deductions: [], bonuses: [] },
       paystubs: [],
       tasks: {},
-      rel: { maya: 50, dev: 55, rosa: 55, jordan: 50, sam: 50, priya: 50, tyler: 50, harriet: 40, gus: 50 },
-      groups: { g1: { health: 60, grade: null }, g2: { health: 60, grade: null } },
       inbox: [],
       flags: {},
-      awards: [],
+      groups: { g1: { health: 60, grade: null }, g2: { health: 60, grade: null } },
       stats: { helpAsked: 0, lateCount: 0, missedCount: 0, cafe: 0, networking: 0, earlyCount: 0, metNpc: {}, lateByWeek: {} },
-      scrapbook: [{ day: 1, text: 'First day as an Imagineering intern!' }],
       chattedToday: {},
       duckDay: 0,
-      pendingCeremonies: [],
+      scenesDone: {},
       final: null,
     };
   }
 
   function save() {
     if (!S) return;
-    try {
-      localStorage.setItem(KEY, JSON.stringify(S));
-    } catch (e) {
-      /* storage may be unavailable (private mode); the game still works this session */
-    }
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable: play continues this session */ }
   }
 
   function load() {
@@ -57,41 +66,46 @@ IS.state = (function () {
   }
 
   function hasSave() {
-    try {
-      return !!localStorage.getItem(KEY);
-    } catch (e) {
-      return false;
-    }
+    try { return !!localStorage.getItem(KEY); } catch (e) { return false; }
   }
 
   function clear() {
-    try {
-      localStorage.removeItem(KEY);
-    } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
     S = null;
   }
 
   function importJSON(text) {
     const data = JSON.parse(text);
-    if (!data || data.version !== 1 || !data.player) throw new Error('Not a valid save file');
+    if (!data || data.version !== 2 || !data.player) throw new Error('Not a valid save file for this version');
     S = data;
     save();
     return S;
   }
 
-  function playerAvatar() {
+  // The player's base look plus whatever they are wearing.
+  function playerLook() {
     if (!S) return {};
-    return Object.assign({}, S.player.avatar, S.equipped);
+    const look = Object.assign({}, S.player.look);
+    ['outfit', 'hat', 'accessory'].forEach((slot) => {
+      const it = S.equipped[slot] && IS.store.byId(S.equipped[slot]);
+      if (it && it.wear) Object.assign(look, it.wear);
+    });
+    if (S.equipped.outfit === 'tee' || !S.equipped.outfit) look.topColor = S.player.look.topColor;
+    if (!S.equipped.hat) look.hat = null;
+    if (!S.equipped.accessory) look.accessory = null;
+    return look;
   }
 
   return {
     get: () => S,
+    job: () => (S ? S.job : null),
     newGame(player) {
       S = fresh(player);
       save();
       return S;
     },
-    save, load, hasSave, clear, importJSON, playerAvatar,
+    newJob,
+    save, load, hasSave, clear, importJSON, playerLook,
     exportJSON: () => JSON.stringify(S, null, 2),
   };
 })();
