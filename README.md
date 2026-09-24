@@ -1,12 +1,12 @@
 # Internship Simulator
 
-An interactive game that gives you the experience of a software engineering internship on a theme-park ride systems team: real assignments, real deadlines, a paycheck, teammates, presentations and an awards night.
+An interactive game that gives you the experience of a software engineering internship at a theme-park studio. You interview, walk around the office, talk to the people you work with, and complete real assignments with real deadlines and a paycheck. Do well enough and you get a return offer for the next internship. There are ten internships in all.
 
 > Educational simulation. Not affiliated with, sponsored or endorsed by The Walt Disney Company. All characters are fictional.
 
 ## ▶️ How to play
 
-No install or build step. Open `index.html` in any modern browser (Chrome, Edge, Firefox, Safari). Progress saves automatically in your browser, and you can export or import a save file from **Save / Menu**.
+No build step. Open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari). Progress saves automatically in your browser. You can export or import a save file from the ☰ menu.
 
 To serve it locally instead (optional):
 
@@ -14,52 +14,100 @@ To serve it locally instead (optional):
 python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-## 🎮 What's in the game
+**Internet on first use:** Python tasks load [Pyodide](https://pyodide.org) (about 10 MB) and SQL tasks load [sql.js](https://sql.js.org) from the jsDelivr CDN the first time you run them. Everything else works offline.
 
-| Feature | Details |
-| --- | --- |
-| **Role** | Software Engineering Intern, Ride Systems Software, for 6 weeks / 30 workdays |
-| **Hours & pay** | 3 hours a day (9:00 AM – 12:00 PM) at **$24/hr**, paid every Friday after taxes. Clocking out early means fewer paid hours. |
-| **Assignments** | 32 tasks: 14 **coding** tasks (you write real JavaScript that runs against visible and hidden tests), 3 **code reviews**, 9 **writing** tasks (design docs, stakeholder email, blameless postmortem, README, self-evaluation…), 3 **training quizzes**, 3 **live presentations** |
-| **Grading** | Every submission is scored against a rubric with a full breakdown and written feedback from whoever assigned it |
-| **Deadlines** | Late work: −10% per workday and a $10 pay adjustment. More than 2 workdays late counts as **missed** (0% and another $25). |
-| **Help** | Ask your mentor Dev for hints, ask a fellow intern, search the internal wiki, use a rubber duck, or ask your manager for an extension *before* the deadline |
-| **Group projects** | Queue Time Display Board (week 2) and the Guest Flow Optimizer capstone (weeks 4–6). Your choices in kickoffs and conflicts change team health, which affects the group grade. |
-| **Presentations** | Build a slide deck, then present live: pick your opening, handle a surprise mid-talk, and answer timed audience questions |
-| **Store** | Outfits, hats and accessories for your avatar; desk upgrades (some boost productivity); café treats for energy; movies, park days and trips for morale |
-| **Awards** | 12 achievements, weekly **Pixie Dust Spot Awards** ($50 bonus), the midpoint **Rising Star**, and a final **Summer Intern Awards** ceremony where you compete with the other interns in 7 categories |
-| **Ending** | Final performance review, return-offer decision, report card, paystubs and a scrapbook of your summer |
+## 🎮 The game
 
-### Characters
-- **Maya Chen**: your manager
-- **Dev Patel**: your mentor
-- **Rosa Alvarez**: runs the intern program
-- **Jordan, Sam, Priya, Tyler**: fellow interns and group-project teammates
-- **Harriet Lin**: the VP who attends your final capstone presentation
+### 🎤 Interviews
+Every internship starts with an interview:
+- **Behavioral round:** five situational questions plus a short written answer, graded with a STAR-style rubric.
+- **Technical round:** four concept questions and a timed live coding problem in that internship's language.
+
+Score 70+ on both rounds to get the offer. If you don't pass, you go through **interview training** (lessons and practice problems), then retry. You can retry as often as you like, and each completed training adds a small prep bonus. A return offer waives the behavioral round of the next interview.
+
+### 🏢 The office
+The main screen is the studio itself. You walk around by clicking or with WASD/arrow keys, and press **E** to interact.
+- Badge in with Marcus at security to start the day.
+- Grab coffee from Gus at the café. Lena at the IT help desk and Rosa, the recruiter, are nearby.
+- Your manager, mentor and four fellow interns are in the office. You can ask them for help or feedback, invite them on a coffee run, or ask for an extension.
+- There's also a studio store, a Hall of Fame, a conference room and a team lab.
+
+Your **computer** is at your desk. It has a To-Do list with every assignment, plus Mail, Calendar, HR (pay stubs and performance), Team and Career apps.
+
+### 🗺️ Ten internships, 100 hours each
+
+| # | Internship | Technology | Pay |
+| --- | --- | --- | --- |
+| 1 | Ride Systems Software | JavaScript | $24/hr |
+| 2 | Park Operations Tools | Python | $26/hr |
+| 3 | Guest Insights | Data science (Python) | $28/hr |
+| 4 | Figure Animation Controls | C++ | $30/hr |
+| 5 | Show Control Infrastructure | Linux / Bash | $32/hr |
+| 6 | Reservations & Ticketing Data | SQL | $34/hr |
+| 7 | Guest App Engineering | HTML / CSS / JS | $36/hr |
+| 8 | Crowd Forecasting | Python (ML from scratch) | $38/hr |
+| 9 | Platform Reliability | DevOps: YAML, Bash, Python | $40/hr |
+| 10 | Imagination Lab | Full-stack capstone: JS, Python, SQL, web, Bash | $45/hr |
+
+Each internship is **100 hours**: 3 hours a day (9:00 AM – 12:00 PM) for 33 days, plus a one-hour final day for reviews and the awards ceremony. Each one has its own team, 28–33 assignments, two group projects, an urgent production incident and an optional stretch task.
+
+### 📋 Work, grading and pay
+- **Technical work runs for real:**
+  - JavaScript runs in a Web Worker and Python on Pyodide.
+  - C++ runs on the bundled JSCPP interpreter, which supports C-style code only (arrays, C strings, `<cmath>`; no STL).
+  - SQL runs on SQLite, checked against your database *and* a hidden one.
+  - Web pages render in a sandboxed frame and are checked through the DOM.
+  - The terminal is a simulated Linux shell with pipes, redirects and globs.
+  - YAML configs are parsed and validated.
+- **Everything else:**
+  - Writing (design docs, emails, postmortems, READMEs) is scored against a keyword and structure rubric.
+  - Code reviews, quizzes and live presentations with audience Q&A are graded too.
+- **Deadlines:** late work loses 10% per workday and costs a $10 pay adjustment. More than 2 workdays late counts as missed (0% and another $25 off).
+- **Help:** your mentor, fellow interns, the wiki, a rubber duck, and extensions requested *before* the deadline.
+- **Pay:** hourly, every Friday after taxes. Clocking out early means fewer paid hours.
+
+### 🛍️ Store, awards and ending
+- **Store:** outfits, hats and accessories for your character, and desk upgrades (some boost productivity). The café sells energy; movies, park days and trips from home boost morale.
+- **Awards:** career achievements, weekly spot awards, the midpoint Rising Star, and an animated awards ceremony at the end of every internship.
+- **Ending:** finish all ten internships and you get a full-time offer.
 
 ## 🗂️ Project structure
 
 ```
-index.html            entry point
-css/style.css         all styles
-js/util.js            helpers (time, money, grades, PRNG)
-js/avatar.js          layered SVG avatars
-js/data/*.js          content: tasks, characters, store, scenes, awards
-js/state.js           save / load / import / export
-js/engine.js          game rules: time, energy, pay, deadlines, help, store, awards
-js/grading.js         rubrics for code, quizzes, reviews, writing, presentations
-js/coderunner.js      runs player code in a Web Worker with a timeout
-js/ui.js              shell, modals, dialogue scenes, end-of-day flow
-js/ceremony.js        award ceremonies
-js/views.js           pages (desk, tasks, inbox, team, store, profile, report, awards, pay)
-js/workspace.js       assignment workspace + live presentation stage
-tests/run-tests.js    content checks (reference solutions, rubrics, schedule)
+index.html                 entry point
+css/style.css              styles (warm palette, borderless components)
+js/util.js                 helpers (time, money, grades, PRNG)
+js/people.js               detailed SVG characters (full body + portraits, walk/blink animations)
+js/tracks.js               internship registry + shared task templates
+js/data/tracks/tNN-*.js    the ten internships: cast, tasks, interview, training
+js/data/*.js               characters, store, awards, behavioral interview, scenes
+js/state.js                save / load / import / export
+js/engine.js               rules: time, energy, pay, deadlines, help, store, awards, career
+js/grading.js              rubrics for code, quizzes, reviews, writing, presentations
+js/runners/*.js            JavaScript, Python, C++, SQL, shell, web and YAML runners
+js/office.js               the walkable office scene
+js/computer.js             the in-game computer and its apps
+js/workspace.js            assignment editors + live presentation stage
+js/interview.js            interviews and training
+js/home.js                 title, character creator, apartment, results
+js/ceremony.js             award ceremonies
+js/ui.js, js/main.js       rendering, dialogue, day flow, click dispatcher
+vendor/jscpp.js            bundled C++ interpreter (MIT, see vendor/JSCPP-LICENSE)
+tests/                     content tests + reference solutions (spoilers!)
 ```
 
 ## ✅ Tests
 
 ```bash
-node tests/run-tests.js
+npm install
+npm test
 ```
 
-This checks that every coding task's reference solution passes all visible and hidden tests, that the starter code does not, and that the rubrics reward thorough work over empty work. The reference solutions are in `tests/solutions.js`. Spoilers!
+The test suite runs every technical task and interview problem with the same engines the game uses (Pyodide, JSCPP, sql.js, jsdom, the shell simulator and the YAML parser). For each one, it checks three things:
+- the reference solution passes every visible and hidden check and scores 100;
+- the starter code fails at least one check;
+- the rubrics reward thorough work over empty work.
+
+It also checks schedules, casts and interview data. Reference solutions are in `tests/solutions/`.
+
+If you change a SQL task, regenerate its expected results with `npm run gen:sql`.
