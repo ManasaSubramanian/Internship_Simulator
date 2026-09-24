@@ -1,4 +1,4 @@
-# 🏰 Imagineer Intern Simulator
+# Internship Simulator
 
 An interactive game that gives you the experience of a software engineering internship on a theme-park ride systems team: real assignments, real deadlines, a paycheck, teammates, presentations and an awards night.
 
