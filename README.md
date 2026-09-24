@@ -2,7 +2,7 @@
 
 An interactive game that gives you the experience of a software engineering internship on a theme-park ride systems team: real assignments, real deadlines, a paycheck, teammates, presentations and an awards night.
 
-> Fan-made educational simulation. Not affiliated with, sponsored or endorsed by The Walt Disney Company. All characters are fictional.
+> Educational simulation. Not affiliated with, sponsored or endorsed by The Walt Disney Company. All characters are fictional.
 
 ## ▶️ How to play
 
