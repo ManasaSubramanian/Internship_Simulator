@@ -1,0 +1,127 @@
+// The people you work with. Avatars use the same SVG builder as the player.
+IS.characters = {
+  maya: {
+    name: 'Maya Chen',
+    short: 'Maya',
+    title: 'Engineering Manager, Ride Systems Software',
+    role: 'Your manager',
+    bio: 'Maya has shipped software for six attractions and still rides every one on opening day. She is direct, fair, and cares a lot about deadlines and clear communication.',
+    avatar: { skin: '#e8c29e', hair: 'bun', hairColor: '#1d1a1a', outfit: 'blazer', hat: null, accessory: 'glasses' },
+    chat: [
+      'The best interns I have had were not the ones who knew everything. They were the ones who told me early when something was off track.',
+      'Write things down. Design docs feel slow until the day they save you a week.',
+      'If you are going to miss a deadline, tell me before it passes, not after. That is the whole trick.',
+      'Our team owns the software between the ride vehicle and the guest-facing apps. Safety first, then show, then efficiency.',
+    ],
+  },
+  dev: {
+    name: 'Dev Patel',
+    short: 'Dev',
+    title: 'Software Engineer II, your mentor',
+    role: 'Mentor',
+    bio: 'Dev was an intern on this exact team three summers ago. Loves rubber-duck debugging, bad puns and very strong cold brew.',
+    avatar: { skin: '#b07a52', hair: 'short', hairColor: '#111', outfit: 'hoodie', hat: null, accessory: 'headphones' },
+    chat: [
+      'Pro tip: read the failing test name first. Half the time it tells you exactly what is wrong.',
+      'Nobody is judging you for asking questions. I asked roughly nine thousand my first summer.',
+      'When you are stuck for more than 30 minutes, write down what you tried, then ask. It makes the question way better.',
+      'The ride lab smells like hydraulic fluid and dreams. You should get a tour if you can.',
+    ],
+  },
+  rosa: {
+    name: 'Rosa Alvarez',
+    short: 'Rosa',
+    title: 'University Programs Recruiter',
+    role: 'Intern program lead',
+    bio: 'Rosa runs the intern program: onboarding, events, the awards ceremony and return offers. She knows everybody.',
+    avatar: { skin: '#c68e62', hair: 'long', hairColor: '#4a2a18', outfit: 'cardigan', hat: null, accessory: 'lanyard' },
+    chat: [
+      'Return offers come down to three things: quality of work, reliability, and how people feel working with you.',
+      'Go to the networking coffee chats. People remember the interns who showed up curious.',
+      'The end-of-summer awards ceremony is my favorite day of the year. Bring your best smile.',
+    ],
+  },
+  jordan: {
+    name: 'Jordan Rivera',
+    short: 'Jordan',
+    title: 'UX Engineering Intern',
+    role: 'Fellow intern',
+    reliability: 0.9,
+    bio: 'Jordan is a front-end and accessibility nerd who sketches ride-queue ideas on napkins. Very dependable.',
+    avatar: { skin: '#d9a47a', hair: 'curly', hairColor: '#2b1a10', outfit: 'tee', hat: 'beanie', accessory: null },
+    chat: [
+      'Did you know good queue design is basically storytelling? The wait IS part of the ride.',
+      'I always check color contrast first. If a guest cannot read the sign, the sign does not exist.',
+      'Want to grab a churro after this? Asking for a friend. The friend is me.',
+    ],
+  },
+  sam: {
+    name: 'Sam Okafor',
+    short: 'Sam',
+    title: 'Software Engineering Intern',
+    role: 'Fellow intern',
+    reliability: 0.6,
+    bio: 'Sam is hilarious, brilliant at algorithms, and not great at calendars. Tends to go quiet when stuck.',
+    avatar: { skin: '#6b4430', hair: 'buzz', hairColor: '#0d0d0d', outfit: 'hawaiian', hat: null, accessory: null },
+    chat: [
+      'I solved it in my head at 2 AM. Unfortunately my head does not push to GitHub.',
+      'Hot take: tabs vs spaces matters less than whether you wrote tests.',
+      'I am definitely going to start my part today. Probably. Almost certainly.',
+    ],
+  },
+  priya: {
+    name: 'Priya Nair',
+    short: 'Priya',
+    title: 'Data Science Intern',
+    role: 'Fellow intern',
+    reliability: 0.95,
+    bio: 'Priya is a graduate student who models crowd flow for fun. Precise, fast, and a little intimidating until you get to know her.',
+    avatar: { skin: '#a8714a', hair: 'ponytail', hairColor: '#120d0b', outfit: 'blazer', hat: null, accessory: 'glasses' },
+    chat: [
+      'Crowds behave like fluids until they do not, and then they behave like people.',
+      'I always ask: what decision will this chart help someone make?',
+      'If our capstone demo does not have a live graph I will be personally offended.',
+    ],
+  },
+  tyler: {
+    name: 'Tyler Brooks',
+    short: 'Tyler',
+    title: 'Controls Engineering Intern',
+    role: 'Fellow intern',
+    reliability: 0.7,
+    bio: 'Tyler lives in the ride lab with the sensors and PLCs. Great hands-on engineer, but hardware delays tend to cascade.',
+    avatar: { skin: '#f0cfae', hair: 'short', hairColor: '#b5651d', outfit: 'labcoat', hat: 'cap', accessory: null },
+    chat: [
+      'Software people think hardware is easy because it is "just wires." It is never just wires.',
+      'I got to test a vehicle restraint cycle today. Four hundred cycles. Zero faults. Chef\'s kiss.',
+      'If the sensor data looks weird, it is probably a loose connector. It is always a loose connector.',
+    ],
+  },
+  harriet: {
+    name: 'Harriet Lin',
+    short: 'Harriet',
+    title: 'VP, Creative Technology',
+    role: 'Executive sponsor',
+    bio: 'Harriet sponsors the intern capstones and asks the hardest questions in the room, always kindly.',
+    avatar: { skin: '#f1d2b6', hair: 'long', hairColor: '#9a9a9a', outfit: 'blazer', hat: null, accessory: 'glasses' },
+    chat: [
+      'Technology is only magic if the guest never has to think about it.',
+      'I love a demo that fails gracefully more than one that never takes a risk.',
+    ],
+  },
+  gus: {
+    name: 'Gus',
+    short: 'Gus',
+    title: 'Barista, Studio Café',
+    role: 'Café',
+    bio: 'Gus remembers everyone\'s order after one visit and knows all the campus gossip.',
+    avatar: { skin: '#8d5a3b', hair: 'short', hairColor: '#dddddd', outfit: 'apron', hat: null, accessory: null },
+    chat: [
+      'The usual? Or are we being adventurous today?',
+      'Word is the capstone demos are in the big screening room this year.',
+    ],
+  },
+};
+
+IS.INTERNS = ['jordan', 'sam', 'priya', 'tyler'];
+IS.TEAM = ['maya', 'dev', 'rosa', 'jordan', 'sam', 'priya', 'tyler'];

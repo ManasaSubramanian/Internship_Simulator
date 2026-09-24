@@ -1,0 +1,9 @@
+{
+  "name": "imagineer-intern-simulator",
+  "version": "1.0.0",
+  "description": "An interactive software engineering internship simulation game.",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  }
+}
