@@ -108,7 +108,7 @@ IS.home = (function () {
         <div class="panel"><div class="small muted" style="font-weight:900;letter-spacing:.8px;text-transform:uppercase">🏠 Home · Internship ${t.n}: ${U.esc(t.team)}</div>
           <h1 style="margin:4px 0">${weekend ? '🌴 Weekend' : '🌙 Evening'}, ${U.esc(s.player.name)}</h1>
           <p>Next up: <b>${U.weekday(j.day)}, Day ${j.day} of 34</b>. ${open ? `You have <b>${open}</b> open assignment${open > 1 ? 's' : ''} waiting on your work computer.` : 'Nothing open right now.'}</p>
-          <div class="grid grid-3" style="margin-bottom:12px"><div class="kpi"><div class="v">${U.money(s.wallet)}</div><div class="k">Wallet</div></div><div class="kpi"><div class="v">${Math.round(j.morale)}</div><div class="k">Morale</div></div><div class="kpi"><div class="v">${((j.day - 1) * 3).toFixed(0)} / 100</div><div class="k">Hours so far</div></div></div>
+          <div class="grid grid-3" style="margin-bottom:12px"><div class="kpi"><div class="v">${U.money(s.wallet)}</div><div class="k">Wallet</div></div><div class="kpi"><div class="v">${Math.round(j.morale)}</div><div class="k">Morale</div></div><div class="kpi"><div class="v">${IS.engine.hoursWorked().toFixed(1)} / ${IS.engine.TOTAL_HOURS}</div><div class="k">Hours so far</div></div></div>
           <div class="row"><button class="btn gold big" data-act="goToWork">🌅 Go to work (Day ${j.day})</button>
             <button class="btn" data-act="learn">📚 Study (Learning Center)</button>
             <button class="btn" data-act="outings">🎟️ Plan an outing</button><button class="btn" data-act="wardrobe">🪞 Mirror & wardrobe</button>

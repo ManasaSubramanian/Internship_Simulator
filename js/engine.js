@@ -311,6 +311,15 @@ IS.engine = (function () {
   }
 
   // ── Work ───────────────────────────────────────────────
+  // Hours actually worked this internship (paid time), including today so far.
+  function hoursWorked() {
+    const j = J();
+    if (!j) return 0;
+    const paid = j.paystubs.reduce((a, p) => a + p.hours * 60, 0) + j.period.days.reduce((a, d) => a + d.minutes, 0);
+    return (paid + (j.clockedIn ? j.minute : 0)) / 60;
+  }
+  const TOTAL_HOURS = U.LAST_DAY * U.DAY_LENGTH / 60;
+
   function canSubmit(id) {
     const j = J();
     const r = rec(id);
@@ -653,7 +662,7 @@ IS.engine = (function () {
 
   return {
     LATE_FEE, MISSED_FEE, track, tasks, taskById, cast, team, resolve, now, rec, dueAbs, effectiveDue, productivity, bonus, remaining, dayLen,
-    applyEffects, changeRel, rel, advance, spend, passMinute, clockIn, clockOut, canSubmit, submit, startJob, finishJob,
+    applyEffects, changeRel, rel, advance, spend, passMinute, hoursWorked, TOTAL_HOURS, clockIn, clockOut, canSubmit, submit, startJob, finishJob,
     askMentor, askPeer, searchWiki, askDuck, hasDuck, requestExtension, chat, itHelp, buy, equip,
     gradeSummary, grantAward, checkAchievements, finalResult, addInbox, label,
   };

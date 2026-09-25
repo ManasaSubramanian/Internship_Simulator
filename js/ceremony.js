@@ -94,7 +94,7 @@ IS.ceremony = (function () {
         <p class="scene-place">🎭 Main Screening Room · Intern Awards Night</p>
         <div style="font-size:3.4rem">🏰</div>
         <h1 class="logo">Intern Awards Night</h1>
-        ${IS.present.speaker('rosa', 'Welcome to Intern Awards Night for ' + IS.engine.track().team + '! One hundred hours, five incredible interns, seven awards. Nominees are based on everyone\'s actual work. Let\'s get started!')}
+        ${IS.present.speaker('rosa', 'Welcome to Intern Awards Night for ' + IS.engine.track().team + '! Thirty-four days, five incredible interns, seven awards. Nominees are based on everyone\'s actual work. Let\'s get started!')}
         <div class="audience">${['harriet', IS.engine.cast().manager, IS.engine.cast().mentor].concat(IS.engine.cast().interns).map((id) => `<div class="seat">${IS.people.portrait(id, 64)}<div>${IS.characters[id].short}</div></div>`).join('')}</div>
         <p style="margin-top:20px"><button class="btn gold big" data-c="next">Begin the ceremony ✨</button></p></div>`);
       bind(el, { next });

@@ -69,7 +69,7 @@ IS.clock = (function () {
     if (!j) return;
     const set = (key, fn) => document.querySelectorAll(`[data-live="${key}"]`).forEach(fn);
     set('clock', (el) => { el.textContent = j.clockedIn ? IS.util.clock(j.minute) : '—'; });
-    set('hours', (el) => { el.textContent = ((j.day - 1) + (j.clockedIn ? j.minute / 60 : 0)).toFixed(1) + ' / 34'; });
+    set('hours', (el) => { el.textContent = E().hoursWorked().toFixed(1) + ' / ' + E().TOTAL_HOURS; });
     set('energy', (el) => { el.style.width = j.energy + '%'; });
     const label = { running: '', idle: '⏸ Paused: you\'ve been away 2 min. Move the mouse or type to resume.', hidden: '⏸ Paused while the game is in the background', over: '🕙 Shift over. Head to the exit to clock out.', off: '' }[now];
     set('clockstate', (el) => { el.textContent = label; el.hidden = !label; });

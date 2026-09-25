@@ -125,14 +125,14 @@ IS.ui = (function () {
     const j = s.job;
     const t = E().track();
     const pending = j.period.days.reduce((a, d) => a + d.pay, 0) + (j.clockedIn ? j.minute / 60 * j.rate : 0);
-    const hours = (j.day - 1) + (j.clockedIn ? j.minute / 60 : 0);
+    const hours = E().hoursWorked();
     const travel = [['lobby', '🏛️ Lobby'], ['cafe', '☕ Café'], ['desk', '💻 My desk'], ['mentor', '🧑‍🏫 Mentor'], ['it', '🛠️ IT'], ['manager', '📋 Manager'], ['conference', '🗣️ Conference'], ['lab', '🔧 Lab'], ['exit', '🚪 Exit']];
     const unread = j.inbox.filter((m) => !m.read).length;
     return `<div class="hud">
         <div class="chipbox">
           <div><div class="k">Internship ${t.n}/10 · ${U.esc(t.langLabel)}</div><div class="v">Day ${j.day}/34 · ${U.weekday(j.day)}</div></div>
           <div><div class="k">${j.clockedIn ? 'On the clock' : 'Not badged in'}</div><div class="v">🕘 <span data-live="clock">${j.clockedIn ? U.clock(j.minute) : '—'}</span></div></div>
-          <div class="hide-sm"><div class="k">Hours</div><div class="v" data-live="hours">${hours.toFixed(1)} / 34</div></div>
+          <div class="hide-sm"><div class="k">Hours</div><div class="v" data-live="hours">${hours.toFixed(1)} / ${E().TOTAL_HOURS}</div></div>
           <div><div class="k">Energy</div><div class="bar energy"><span data-live="energy" style="width:${j.energy}%"></span></div></div>
           <div><div class="k">Morale</div><div class="bar morale"><span style="width:${j.morale}%"></span></div></div>
         </div>
