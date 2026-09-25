@@ -153,6 +153,7 @@ IS.interview = (function () {
       <table class="tbl" style="margin:10px 0"><tr><th>Round</th><th class="num">Score</th><th class="num">Needed</th></tr>
         <tr><td>Behavioral${I.waived ? ' (waived: return offer)' : ` (5 questions ${Math.round(sc.behavMc)}%, written ${Math.round(sc.free)}%)`}</td><td class="num">${Math.round(sc.behavioral)}</td><td class="num">${PASS}</td></tr>
         <tr><td>Technical (concepts ${Math.round(sc.concepts)}%, live problem ${Math.round(sc.code)}%)</td><td class="num">${Math.round(sc.technical)}</td><td class="num">${PASS}</td></tr>
+        ${sc.testPass ? '<tr><td colspan="3" class="small muted">🧪 Auto-passed with the test code.</td></tr>' : ''}
         ${b ? `<tr><td colspan="3" class="small muted">Includes +${b} prep bonus from ${I.trainings} completed training${I.trainings > 1 ? 's' : ''}.</td></tr>` : ''}</table>
       ${passed ? `<button class="btn gold big" data-act="ivAccept">Accept & start Day 1 →</button>` : `<button class="btn primary big" data-act="ivTrain">Start training →</button>`}</div></div>`;
   }
@@ -248,6 +249,18 @@ IS.interview = (function () {
     if (passed) IS.ui.confetti(60);
   }
 
+  // Testing shortcut (see U.TEST_CODE): pass the whole interview.
+  function testPass(I) {
+    clearInterval(timerId);
+    P().clearShells();
+    I.scores = { behavMc: 100, free: 100, behavioral: 100, concepts: 100, code: 100, technical: 100, passed: true, testPass: true };
+    I.stage = 'result';
+    st().lifetime.interviews++;
+    IS.state.save();
+    IS.ui.render();
+    IS.ui.toast('🧪 Test code: interview auto-passed.', 'good');
+  }
+
   const actions = {
     ivStart() {
       const I = iv();
@@ -272,6 +285,7 @@ IS.interview = (function () {
     },
     ivFree() {
       const I = iv();
+      if (U.hasTestCode(I.answers.free)) return testPass(I);
       if (U.words(I.answers.free).length < 10) return IS.ui.toast('Write a real answer first. Aim for 50+ words.', 'bad');
       I.stage = 'concepts';
       IS.state.save();
@@ -294,6 +308,7 @@ IS.interview = (function () {
       const I = iv();
       const p = problem(I);
       clearInterval(timerId);
+      if (U.hasTestCode(I.answers.code)) return testPass(I);
       const out = document.getElementById('iv-results');
       if (out) out.innerHTML = '<p class="muted">Grading…</p>';
       P().run(p, I.answers.code, 'iv', 'all', ctx()).then((run) => {

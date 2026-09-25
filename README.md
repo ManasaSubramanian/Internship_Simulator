@@ -107,6 +107,13 @@ vendor/jscpp.js            bundled C++ interpreter (MIT, see vendor/JSCPP-LICENS
 tests/                     content tests + reference solutions (spoilers!)
 ```
 
+## 🧪 Testing shortcut
+
+To move through the game quickly while testing, type **`3.14159265358979`** into any answer you write:
+- **Interview** (written behavioral answer, or the live coding problem): passes the whole interview.
+- **Assignment** (code, SQL, web page, YAML, terminal command, writing, review comment or slide text): submitting gives 100%, even with no focus time logged or after the deadline. You still need to be badged in.
+- **Learning Center practice:** the problem counts as solved (this also counts toward interview training).
+
 ## ✅ Tests
 
 ```bash

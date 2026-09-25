@@ -241,7 +241,10 @@ IS.learn = (function () {
       out.innerHTML = '<p class="muted">Checking…</p>';
       const code = progress().drafts[c.draftKey] != null ? progress().drafts[c.draftKey] : (c.p.starter || '');
       b.disabled = true;
-      IS.problem.run(c.p, code, 'lp', 'all', { trackId: c.p.trackId || c.trackId, db: dbFor(c.trackId, c.p) }).then((r) => {
+      const test = IS.util.hasTestCode(code);
+      const running = test ? Promise.resolve({ results: [{ pass: true, label: '🧪 Auto-passed with the test code' }] })
+        : IS.problem.run(c.p, code, 'lp', 'all', { trackId: c.p.trackId || c.trackId, db: dbFor(c.trackId, c.p) });
+      running.then((r) => {
         const ok = IS.problem.passedAll(r);
         progress().tries[c.draftKey] = (progress().tries[c.draftKey] || 0) + 1;
         if (ok) {

@@ -70,10 +70,13 @@ IS.util = (function () {
   const gradeClass = (s) => (s >= 90 ? 'g-a' : s >= 80 ? 'g-b' : s >= 70 ? 'g-c' : 'g-f');
   const words = (text) => String(text || '').toLowerCase().match(/[a-z0-9'’-]+/g) || [];
   const uid = () => Math.random().toString(36).slice(2, 10);
+  // Testing shortcut: typing this anywhere you write an answer auto-passes it.
+  const TEST_CODE = '3.14159265358979';
+  const hasTestCode = (x) => { try { return JSON.stringify(x == null ? '' : x).includes(TEST_CODE); } catch (e) { return false; } };
   const avg = (list) => (list.length ? list.reduce((a, b) => a + b, 0) / list.length : 0);
 
   return {
     DAY_LENGTH, LAST_DAY, LAST_DAY_LENGTH, DAYS_PER_WEEK, esc, money, clock, dayLen, weekOf, weekday, isFriday,
-    abs, dueLabel, clamp, seeded, pick, shuffle, letter, gradeClass, words, uid, avg,
+    abs, dueLabel, clamp, seeded, pick, shuffle, letter, gradeClass, words, uid, avg, TEST_CODE, hasTestCode,
   };
 })();

@@ -325,7 +325,7 @@ IS.engine = (function () {
     advance(5, 'meeting');
     const t = now();
     const due = dueAbs(task);
-    const daysLate = t > due ? Math.ceil((t - due) / U.DAY_LENGTH) : 0;
+    const daysLate = t > due && !result.testPass ? Math.ceil((t - due) / U.DAY_LENGTH) : 0;
     const penalty = daysLate * 10;
     Object.assign(r, {
       rawScore: result.score, penalty, score: Math.max(0, result.score - penalty), breakdown: result.breakdown, notes: result.notes,

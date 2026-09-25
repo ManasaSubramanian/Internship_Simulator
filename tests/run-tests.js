@@ -225,6 +225,8 @@ function checkSoft(track, t) {
   // Written behavioral answer rubric
   check(IS.grading.written({ rubric: IS.behavioral.freeResponse.rubric }, '').score <= 15, 'behavioral free response: empty scores low');
   IS.behavioral.questions.forEach((q, i) => check(Math.max(...q.options.map((o) => o.pts)) === 10, `behavioral Q${i} has a best answer`));
+  // Testing shortcut code
+  check(IS.util.hasTestCode('my answer 3.14159265358979') && IS.util.hasTestCode(['ls', '3.14159265358979']) && !IS.util.hasTestCode('3.14159'), 'test pass code detection');
   // Shell + YAML basics
   const sh = shell.create({ files: { '/data/a.txt': 'x\ny\nx\n' } });
   check(sh.exec('sort /data/a.txt | uniq -c').out.includes('2 x'), 'shell pipes work');

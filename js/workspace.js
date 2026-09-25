@@ -205,7 +205,7 @@ IS.workspace = (function () {
         ${log.length ? `<div style="margin-top:10px;max-height:280px;overflow-y:auto">${log.map((h) => `<div class="help-msg">${h.who ? `<span style="border-radius:8px;overflow:hidden;line-height:0;flex:none">${IS.people.portrait(h.who, 30)}</span>` : '<span style="font-size:1.3rem">📚</span>'}<div>${h.html || U.esc(h.text)}</div></div>`).join('')}</div>` : ''}</div>
       <div class="panel" ${can.ok ? 'style="box-shadow:0 0 0 3px var(--gold), var(--shadow)"' : ''}><h3>📤 Submit</h3>
         <p class="small muted">${can.ok ? (task.type === 'presentation' ? 'Ready? Submitting takes you on stage to present live.' : 'Submitting is final and takes 5 minutes.') : U.esc(can.why)}</p>
-        <button class="btn gold block" data-act="submit" data-arg="${task.id}" ${can.ok ? '' : 'disabled'}>${task.type === 'presentation' ? '🎤 Present now' : 'Submit for grading'}</button></div></div>`;
+        <button class="btn gold block" data-act="submit" data-arg="${task.id}" ${can.ok ? '' : 'aria-disabled="true" style="opacity:.55"'}>${task.type === 'presentation' ? '🎤 Present now' : 'Submit for grading'}</button></div></div>`;
   }
 
   function render(id) {
@@ -363,6 +363,14 @@ IS.workspace = (function () {
       const j = s.job;
       const task = E().taskById(id);
       const r = j.tasks[id];
+      const typed = [r.draft, task.type === 'terminal' ? shellFor(task, r).history.map((h) => h.cmd) : null];
+      if (U.hasTestCode(typed) && j.clockedIn && r.status === 'assigned') {
+        // Testing shortcut (see U.TEST_CODE): full marks, no focus time or late penalty needed.
+        r.progress = task.effort;
+        const rec = E().submit(id, { score: 100, testPass: true, breakdown: [{ label: '🧪 Test code', earned: 100, max: 100, note: 'Auto-passed for testing' }], notes: ['Auto-passed with the test code.'] }, { testPass: true, draft: r.draft });
+        IS.ui.toast(`🧪 ${task.title}: auto-passed (${rec.score}%)`, 'good');
+        return IS.ui.after();
+      }
       const can = E().canSubmit(id);
       if (!can.ok) return IS.ui.toast(can.why, 'bad');
       const finish = (result, submission) => {
