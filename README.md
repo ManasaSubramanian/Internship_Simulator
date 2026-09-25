@@ -23,26 +23,45 @@ Every internship starts with an interview:
 - **Behavioral round:** five situational questions plus a short written answer, graded with a STAR-style rubric.
 - **Technical round:** four concept questions and a timed live coding problem in that internship's language.
 
-Score 70+ on both rounds to get the offer. If you don't pass, you go through **interview training**: you work through that internship's Learning Center topics (plus STAR answers if the behavioral round counts), solving a practice problem in each, then retry. You can retry as often as you like, and each completed training adds a small prep bonus. A return offer waives the behavioral round of the next interview.
+Score 70+ on both rounds to get the offer. If you don't pass, you go through **interview training**: you work through that internship's Concepts and Interview-prep lessons (plus STAR answers if the behavioral round counts), solving a practice problem in each, then retry. You can retry as often as you like, and each completed training adds a small prep bonus. A return offer waives the behavioral round of the next interview.
 
 ### 📚 Learning Center
-Beginner-friendly lessons for every internship, written for someone who has never used that language or heard of the topic. There are 45 topics (135 practice problems): 4–5 per internship plus 4 career skills (STAR interview answers, writing at work, code reviews, presenting). Each topic has:
+Beginner-friendly lessons for every internship, written for someone who has never used that language or heard of the topic. Each internship has three sections:
+- **📘 Concepts:** 4–5 hand-written lessons that teach the language or topic from zero.
+- **🎤 Interview prep:**
+  - how the interview works,
+  - building a behavioral story bank,
+  - concept-question strategy, practiced on that internship's real interview questions,
+  - the live timed problem, practiced on its real interview problems.
+- **🛠️ Assignment prep:**
+  - how work is graded,
+  - technical assignments in that language, with its quality rules,
+  - writing assignments,
+  - code reviews, using that internship's own review,
+  - presentations and standups.
+
+There are also 4 career-skills lessons: STAR interview answers, writing at work, code reviews and presenting. That makes 135 lessons and 405 practice problems in all. Every lesson has:
 1. **The idea in plain words:** an explanation with an everyday analogy and a "words to know" glossary.
 2. **See it in code:** a worked example with a line-by-line breakdown. Pointing at a step highlights the matching lines.
 3. **Your turn:** 3 practice problems that loop (1 → 2 → 3 → 1), run in the same engines as the real work. Each has a hint, and after one attempt you can reveal a solution.
 
-Open it with 📚 in the office, the Learn app on your computer, from home, or from the career center. Every assignment also links its related lessons under **Get help**.
+Open it with 📚 in the office, the Learn app on your computer, from home, or from the career center. The **search box** finds every lesson about a keyword (like "loop", "JOIN" or "grep") across all subjects. Every assignment also links its related lessons under **Get help**.
 
 ### 🏢 The office
 The main screen is the studio itself. You walk around by clicking or with WASD/arrow keys, and press **E** to interact.
 - Badge in with Marcus at security to start the day.
-- Grab coffee from Gus at the café. Lena at the IT help desk and Rosa, the recruiter, are nearby.
-- Your manager, mentor and four fellow interns are in the office. You can ask them for help or feedback, invite them on a coffee run, or ask for an extension.
+- **Daily standup (5 min):** everyone, you included, presents a 1–2 slide mini deck (what you did, what's next, blockers), and everyone is graded.
+- **Daily 1:1 with your mentor:** today's priorities in order, how you're doing (grades, standups, lateness), specific ways to improve (from your actual rubric scores), and what's coming up.
+- **Real conversations:**
+  - Interns tell you about their previous internships, how they got this one, and their specialty, which teaches a real concept and links to its lesson.
+  - Mentors, managers and the studio staff (Rosa, Gus, Lena, Marcus and others) each have role-specific topics.
+  - People also ask about *your* past internships and application.
+- **Coffee and snack breaks:** order from Gus yourself, or invite an intern. You'll watch your characters walk to the counter, order, pick up the drink or food, sit down, and sip or snack while you talk.
 - There's also a studio store, a Hall of Fame, a conference room and a team lab.
 
 Your **computer** is at your desk. It has a To-Do list with every assignment, plus Mail, Calendar, HR (pay stubs and performance), Team and Career apps.
 
-### 🗺️ Ten internships, 100 hours each
+### 🗺️ Ten internships, 34 real-time workdays each
 
 | # | Internship | Technology | Pay |
 | --- | --- | --- | --- |
@@ -57,7 +76,13 @@ Your **computer** is at your desk. It has a To-Do list with every assignment, pl
 | 9 | Platform Reliability | DevOps: YAML, Bash, Python | $40/hr |
 | 10 | Imagination Lab | Full-stack capstone: JS, Python, SQL, web, Bash | $45/hr |
 
-Each internship is **100 hours**: 3 hours a day (9:00 AM – 12:00 PM) for 33 days, plus a one-hour final day for reviews and the awards ceremony. Each one has its own team, 28–33 assignments, two group projects, an urgent production incident and an optional stretch task.
+Each internship is **34 workdays of one real hour** (9:00–10:00 AM on the game clock). Once you badge in, one real minute is one work minute.
+
+Work only counts while an assignment is **open on your computer** and you're active, and every task needs its full focus time before you can submit. The clock pauses if you switch tabs or go 2 minutes without typing or moving the mouse.
+
+Each internship has its own team, 28–33 assignments, a **daily ticket** every day, two group projects, an urgent production incident and an optional stretch task.
+
+**Final grade:** 75% assignments, 10% daily tickets and 15% standups.
 
 ### 📋 Work, grading and pay
 - **Technical work runs for real:**
@@ -97,9 +122,13 @@ js/office.js               the walkable office scene
 js/computer.js             the in-game computer and its apps
 js/workspace.js            assignment editors + live presentation stage
 js/interview.js            interviews and training
-js/learn.js                Learning Center (lessons + looping practice)
+js/learn.js                Learning Center (sections, search, looping practice)
+js/clock.js                real-time work clock (focus time, idle pause, test skip)
+js/meetings.js             daily standup (graded mini decks) and mentor 1:1
+js/daily.js                daily tickets
+js/talk.js, js/data/talk.js  role-based conversations
 js/problem.js              shared practice-problem editor/runner
-js/data/learn/*.js         lesson content for each internship + career skills
+js/data/learn/*.js         lesson content (concepts per internship, career skills, prep.js builds interview & assignment prep)
 js/home.js                 title, character creator, apartment, results
 js/ceremony.js             award ceremonies
 js/ui.js, js/main.js       rendering, dialogue, day flow, click dispatcher
@@ -109,7 +138,11 @@ tests/                     content tests + reference solutions (spoilers!)
 
 ## 🧪 Testing shortcut
 
-To move through the game quickly while testing, type **`3.14159265358979`** into any answer you write:
+To move through the game quickly while testing, type **`3.14159265358979`**:
+- **In the Learning Center search box:** shows test tools that skip the real-time clock forward (+5, +15 or +30 minutes, or to the end of the day). Focus time goes to the open task.
+- **In a standup slide:** 100% for that standup.
+
+Or type it into any answer you write:
 - **Interview** (written behavioral answer, or the live coding problem): passes the whole interview.
 - **Assignment** (code, SQL, web page, YAML, terminal command, writing, review comment or slide text): submitting gives 100%, even with no focus time logged or after the deadline. You still need to be badged in.
 - **Learning Center practice:** the problem counts as solved (this also counts toward interview training).
@@ -126,6 +159,6 @@ The test suite runs every technical task and interview problem with the same eng
 - the starter code fails at least one check;
 - the rubrics reward thorough work over empty work.
 
-It also checks every Learning Center topic: it has an explanation and a worked example whose steps point at real lines, and its practice problems' solutions pass while their starters fail. Schedules, casts and interview data are checked too. Reference solutions are in `tests/solutions/`.
+It also checks that every intern, mentor and manager has their conversation content, that every internship has 32 well-formed daily tickets, and that standup grading rewards a specific update. It checks every Learning Center topic too: it has an explanation and a worked example whose steps point at real lines, and its practice problems' solutions pass while their starters fail. Schedules, casts and interview data are checked too. Reference solutions are in `tests/solutions/`.
 
 If you change a SQL task, regenerate its expected results with `npm run gen:sql`.

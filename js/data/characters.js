@@ -20,7 +20,7 @@ IS.addCharacters({
     chat: [
       'Return offers come down to three things: quality of work, reliability, and how people feel working with you.',
       'Go to the coffee chats. People remember the interns who showed up curious.',
-      'Every internship here is 100 hours. It goes faster than you think.',
+      'Every internship here is 34 workdays. It goes faster than you think.',
       'Interview tip: specific stories beat big adjectives. "I cut load time 40%" beats "I\'m a hard worker."',
     ],
   },

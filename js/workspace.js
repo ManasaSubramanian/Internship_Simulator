@@ -80,7 +80,7 @@ IS.workspace = (function () {
       : lang === 'cpp' ? 'C-style C++ (arrays, char strings, &lt;cmath&gt;, &lt;cstring&gt;). No STL containers. Don\'t write main(); the grader adds one.' : '';
     return `<div class="panel"><div class="spread"><h3 style="margin:0">💻 ${LANG_NAME[lang]}: <code>${U.esc(task.fnName)}</code></h3>
         <div class="row"><button class="btn small ghost" data-act="resetCode" data-arg="${task.id}">↺ Reset</button>
-        <button class="btn small primary" data-act="runTests" data-arg="${task.id}">▶ Run visible tests${st().job.clockedIn ? ' (1 min)' : ''}</button></div></div>
+        <button class="btn small primary" data-act="runTests" data-arg="${task.id}">▶ Run visible tests</button></div></div>
       ${note ? `<p class="small muted" style="margin:6px 0">${note}</p>` : ''}
       <textarea class="editor" id="ws-code" spellcheck="false" aria-label="Code editor" style="margin-top:8px">${U.esc(r.draft)}</textarea>
       <p class="small muted">Visible tests: ${task.tests.length}. Hidden tests on submit: ${(task.hidden || []).length}. Grading: 85% tests, 15% code quality.</p>
@@ -190,22 +190,22 @@ IS.workspace = (function () {
     const log = (r.helpLog || []).slice().reverse();
     const related = IS.learn.related(task, E().track().id, 2);
     return `<div class="ws-side">
-      <div class="panel"><h3>⏱️ Focus time</h3>
-        <div class="spread small"><span>${Math.floor(r.progress)} / ${task.effort} min logged</span><span>${pct}%</span></div><div class="bar"><span style="width:${pct}%"></span></div>
-        <p class="small muted" style="margin-top:6px">${on ? `At ${Math.round(E().productivity() * 100)}% productivity, 30 min of work logs ${Math.round(30 * E().productivity())} min.` : 'Badge in to log work time.'}</p>
-        <div class="row">${[15, 30, 60].map((m) => `<button class="btn small" data-act="work" data-arg="${task.id}|${m}" ${on && pct < 100 ? '' : 'disabled'}>Work ${m}m</button>`).join('')}</div></div>
+      <div class="panel" data-live="focus" data-task="${task.id}"><h3>⏱️ Focus time</h3>
+        <div class="spread small"><span class="focus-text">${Math.floor(r.progress)} / ${task.effort} min of focus time</span><span class="muted" data-live="clock">${on ? U.clock(j.minute) : '—'}</span></div><div class="bar"><span style="width:${pct}%"></span></div>
+        <p class="small muted focus-hint" style="margin-top:6px">${on ? 'Focus time grows in real time while this task is open and you\'re active.' : 'Badge in to start working.'}</p>
+        <p class="small" data-live="clockstate" hidden style="color:var(--terracotta-2);font-weight:800;margin:0"></p></div>
       <div class="panel"><h3>🙋 Get help</h3><div class="stack">
-        <button class="btn small block" data-act="taskHelp" data-arg="mentor|${task.id}" ${on ? '' : 'disabled'}>💬 Message ${U.esc(mentor.short)} (mentor) · 15m <span class="muted">${r.hintsUsed}/${task.hints.length}</span></button>
-        <button class="btn small block" data-act="taskHelp" data-arg="peer|${task.id}" ${on ? '' : 'disabled'}>💬 Message ${U.esc(peer.short)} · 10m</button>
-        <button class="btn small block" data-act="taskHelp" data-arg="wiki|${task.id}" ${on ? '' : 'disabled'}>📚 Search the wiki · 5m</button>
-        ${E().hasDuck() ? `<button class="btn small block" data-act="taskHelp" data-arg="duck|${task.id}" ${on && j.duckDay !== j.day ? '' : 'disabled'}>🦆 Rubber duck · 5m (1/day)</button>` : ''}
-        <button class="btn small block ghost" data-act="taskHelp" data-arg="extension|${task.id}" ${on && !r.extRequested ? '' : 'disabled'}>📅 Ask for an extension · 5m</button></div>
-        ${related.length ? `<div class="related"><div class="small" style="font-weight:900;margin:10px 0 6px">📖 Learn the concepts (free, no time used)</div>${related.map((x) => `<button class="btn small block ghost" data-act="learn" data-arg="${x.trackId}|${x.t.id}">${x.t.icon || '📘'} ${U.esc(x.t.title)}</button>`).join('')}</div>` : `<button class="btn small block ghost" style="margin-top:8px" data-act="learn">📖 Open the Learning Center</button>`}
+        <button class="btn small block" data-act="taskHelp" data-arg="mentor|${task.id}" ${on ? '' : 'disabled'}>💬 Message ${U.esc(mentor.short)} (mentor) · 5m <span class="muted">${r.hintsUsed}/${task.hints.length}</span></button>
+        <button class="btn small block" data-act="taskHelp" data-arg="peer|${task.id}" ${on ? '' : 'disabled'}>💬 Message ${U.esc(peer.short)} · 3m</button>
+        <button class="btn small block" data-act="taskHelp" data-arg="wiki|${task.id}" ${on ? '' : 'disabled'}>📚 Search the wiki · 2m</button>
+        ${E().hasDuck() ? `<button class="btn small block" data-act="taskHelp" data-arg="duck|${task.id}" ${on && j.duckDay !== j.day ? '' : 'disabled'}>🦆 Rubber duck · 2m (1/day)</button>` : ''}
+        <button class="btn small block ghost" data-act="taskHelp" data-arg="extension|${task.id}" ${on && !r.extRequested ? '' : 'disabled'}>📅 Ask for an extension · 2m</button></div>
+        ${related.length ? `<div class="related"><div class="small" style="font-weight:900;margin:10px 0 6px">📖 Learn the concepts</div>${related.map((x) => `<button class="btn small block ghost" data-act="learn" data-arg="${x.trackId}|${x.t.id}">${x.t.icon || '📘'} ${U.esc(x.t.title)}</button>`).join('')}</div>` : `<button class="btn small block ghost" style="margin-top:8px" data-act="learn">📖 Open the Learning Center</button>`}
         <p class="small muted" style="margin:8px 0 0">Tip: you can also walk over and ask people in person.</p>
         ${log.length ? `<div style="margin-top:10px;max-height:280px;overflow-y:auto">${log.map((h) => `<div class="help-msg">${h.who ? `<span style="border-radius:8px;overflow:hidden;line-height:0;flex:none">${IS.people.portrait(h.who, 30)}</span>` : '<span style="font-size:1.3rem">📚</span>'}<div>${h.html || U.esc(h.text)}</div></div>`).join('')}</div>` : ''}</div>
       <div class="panel" ${can.ok ? 'style="box-shadow:0 0 0 3px var(--gold), var(--shadow)"' : ''}><h3>📤 Submit</h3>
-        <p class="small muted">${can.ok ? (task.type === 'presentation' ? 'Ready? Submitting takes you on stage to present live.' : 'Submitting is final and takes 5 minutes.') : U.esc(can.why)}</p>
-        <button class="btn gold block" data-act="submit" data-arg="${task.id}" ${can.ok ? '' : 'aria-disabled="true" style="opacity:.55"'}>${task.type === 'presentation' ? '🎤 Present now' : 'Submit for grading'}</button></div></div>`;
+        <p class="small muted" data-live="submitwhy" data-task="${task.id}">${can.ok ? (task.type === 'presentation' ? 'Ready? Submitting takes you on stage to present live.' : 'Submitting is final.') : U.esc(can.why)}</p>
+        <button class="btn gold block" data-act="submit" data-live="submit" data-arg="${task.id}" data-task="${task.id}" ${can.ok ? '' : 'aria-disabled="true" style="opacity:.55"'}>${task.type === 'presentation' ? '🎤 Present now' : 'Submit for grading'}</button></div></div>`;
   }
 
   function render(id) {
@@ -302,7 +302,7 @@ IS.workspace = (function () {
   function runnerRun(task, code, which) {
     const all = which === 'all';
     if (task.type === 'coding') return IS.runners[task.lang].run(code, task.fnName, all ? task.tests.concat(task.hidden || []) : task.tests);
-    if (task.type === 'sql') return IS.runners.sql.run(task, code, task.db || E().track().db, IS.sqlExpected[E().track().id][task.id]);
+    if (task.type === 'sql') return IS.runners.sql.run(task, code, task.db || E().track().db, (IS.sqlExpected[task.sqlTrack || E().track().id] || {})[task.expectedId || task.id]);
     if (task.type === 'web') return IS.runners.web.run(task, code, document.getElementById('ws-preview'), all ? 'all' : 'visible');
     if (task.type === 'config') {
       const g = IS.runners.yaml.grade(all ? task : Object.assign({}, task, { checks: task.checks.filter((c) => !c.hidden) }), code);
@@ -323,7 +323,6 @@ IS.workspace = (function () {
       const task = E().taskById(id);
       const r = j.tasks[id];
       showRunning(task.lang === 'python' ? 'Running Python… (the first run downloads the Python runtime)' : 'Running tests…');
-      if (j.clockedIn) E().spend(1);
       runnerRun(task, r.draft, 'visible').then((run) => { r.lastRun = run; IS.state.save(); IS.ui.after(); });
     },
     runSql(id) {

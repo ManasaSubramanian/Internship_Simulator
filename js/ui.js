@@ -111,6 +111,8 @@ IS.ui = (function () {
     const j = s.job;
     if (!j.clockedIn) return 'Badge in with Marcus at the security desk to start Day ' + j.day;
     if (j.minute >= E().dayLen()) return 'Your shift is over. Head to the exit to clock out.';
+    if (IS.meetings.standupDue()) return '🧍 Standup time! Talk to your manager to start it.';
+    if (IS.meetings.oneOnOneDue()) return `🧑‍🏫 Daily 1:1: walk to ${IS.characters[E().cast().mentor].short}'s desk and check in.`;
     const unread = j.inbox.filter((m) => !m.read).length;
     const open = E().tasks().filter((t) => j.tasks[t.id] && j.tasks[t.id].status === 'assigned').sort((a, b) => E().dueAbs(a) - E().dueAbs(b));
     if (open.length && open[0].urgent) return '🚨 Urgent: fix "' + open[0].title + '" at your desk';
@@ -123,15 +125,15 @@ IS.ui = (function () {
     const j = s.job;
     const t = E().track();
     const pending = j.period.days.reduce((a, d) => a + d.pay, 0) + (j.clockedIn ? j.minute / 60 * j.rate : 0);
-    const hours = (j.day - 1) * 3 + (j.clockedIn ? j.minute / 60 : 0);
+    const hours = (j.day - 1) + (j.clockedIn ? j.minute / 60 : 0);
     const travel = [['lobby', '🏛️ Lobby'], ['cafe', '☕ Café'], ['desk', '💻 My desk'], ['mentor', '🧑‍🏫 Mentor'], ['it', '🛠️ IT'], ['manager', '📋 Manager'], ['conference', '🗣️ Conference'], ['lab', '🔧 Lab'], ['exit', '🚪 Exit']];
     const unread = j.inbox.filter((m) => !m.read).length;
     return `<div class="hud">
         <div class="chipbox">
           <div><div class="k">Internship ${t.n}/10 · ${U.esc(t.langLabel)}</div><div class="v">Day ${j.day}/34 · ${U.weekday(j.day)}</div></div>
-          <div><div class="k">${j.clockedIn ? 'On the clock' : 'Not badged in'}</div><div class="v">🕘 ${j.clockedIn ? U.clock(j.minute) : '—'}</div></div>
-          <div class="hide-sm"><div class="k">Hours</div><div class="v">${hours.toFixed(1)} / 100</div></div>
-          <div><div class="k">Energy</div><div class="bar energy"><span style="width:${j.energy}%"></span></div></div>
+          <div><div class="k">${j.clockedIn ? 'On the clock' : 'Not badged in'}</div><div class="v">🕘 <span data-live="clock">${j.clockedIn ? U.clock(j.minute) : '—'}</span></div></div>
+          <div class="hide-sm"><div class="k">Hours</div><div class="v" data-live="hours">${hours.toFixed(1)} / 34</div></div>
+          <div><div class="k">Energy</div><div class="bar energy"><span data-live="energy" style="width:${j.energy}%"></span></div></div>
           <div><div class="k">Morale</div><div class="bar morale"><span style="width:${j.morale}%"></span></div></div>
         </div>
         <div class="spacer"></div>
@@ -144,7 +146,7 @@ IS.ui = (function () {
           <button class="btn small dark" data-act="menu" title="Menu">☰</button>
         </div>
       </div>
-      <div class="objective">${U.esc(objective(s))}</div>
+      <div class="objective">${U.esc(objective(s))}<div class="small" data-live="clockstate" hidden></div></div>
       <div class="travel">${travel.map(([k, l]) => `<button data-act="travel" data-arg="${k}">${l}${k === 'desk' && unread ? '<span class="dot"></span>' : ''}</button>`).join('')}</div>
       <div class="keys-hint">Click to walk · WASD / arrows · E to interact</div>`;
   }
@@ -187,7 +189,7 @@ IS.ui = (function () {
     closeDialog();
     const w = who(o.id);
     const el = document.createElement('div');
-    el.className = 'dialog';
+    el.className = 'dialog' + (IS.office.inScene && IS.office.inScene() ? ' top' : '');
     el.innerHTML = `<div class="head">${portraitHtml(o.id, 88)}<div style="flex:1;min-width:0">${o.place ? `<div class="place">${U.esc(o.place)}</div>` : ''}<div class="who">${U.esc(w.name)}<small>${U.esc(w.title)}</small></div><div class="text">${o.html || U.esc(o.text)}</div></div></div><div class="actions"></div>`;
     const actions = el.querySelector('.actions');
     const close = () => {
@@ -232,7 +234,7 @@ IS.ui = (function () {
     closeDialog();
     const steps = scene.steps.slice();
     const el = document.createElement('div');
-    el.className = 'dialog';
+    el.className = 'dialog' + (IS.office.inScene && IS.office.inScene() ? ' top' : '');
     el.innerHTML = `<div class="place">${U.esc(scene.place || '')}</div><h3 style="margin:2px 0 6px">${U.esc(scene.title)}</h3><div class="log"></div><div class="actions"></div>`;
     ($('#dialog-layer') || document.body).appendChild(el);
     IS.office.pause(true);
@@ -243,7 +245,6 @@ IS.ui = (function () {
 
     function finish() {
       el.remove();
-      if (scene.time) E().spend(scene.time);
       if (scene.effects) E().applyEffects(scene.effects);
       if (scene.after === 'risingStar') E().grantAward('rising_star', 'Midpoint review');
       render();
@@ -316,13 +317,8 @@ IS.ui = (function () {
     if (id === 'trophies') return IS.computer.awardsModal();
     if (id === 'conference') return conferenceInfo();
     if (id === 'lab') return talk({ id: E().cast().interns[3], place: '🔧 ' + E().track().lab.name, text: `This is the ${E().track().lab.name}. It's where the real-world side of our work gets tested. Ask me anything!`, options: [
-      { label: '💬 Chat (10 min)', onClick: (c) => { c(); chatWith(E().cast().interns[3]); } }, { label: 'Bye!', cls: 'ghost' }] });
+      { label: '💬 Talk', onClick: (c) => { c(); IS.talk.open(E().cast().interns[3]); } }, { label: 'Bye!', cls: 'ghost' }] });
     if (IS.characters[id]) return talkMenu(id);
-  }
-
-  function chatWith(id) {
-    const r = E().chat(id);
-    talk({ id, text: r.text, options: [{ label: 'Thanks!', cls: 'primary', onClick: (c) => { c(); after(); } }] });
   }
 
   function talkMenu(id) {
@@ -336,11 +332,13 @@ IS.ui = (function () {
       return talk({ id, place: '🛂 Security desk', text: `Good morning, ${s.player.name}! Day ${j.day}. Badge on the reader and you're in.`, options: [
         { label: '🪪 Badge in & start my shift', cls: 'gold', onClick: (cl) => { cl(); startDay(); } }, { label: 'Not yet', cls: 'ghost' }] });
     }
-    opts.push({ label: '💬 Chat (10 min)', disabled: !on, onClick: (cl) => { cl(); chatWith(id); } });
+    opts.push({ label: '💬 Talk', cls: 'primary', onClick: (cl) => { cl(); IS.talk.open(id); } });
+    if (id === c.manager && IS.meetings.standupDue()) opts.unshift({ label: '🧍 Start today\'s standup', cls: 'gold', onClick: (cl) => { cl(); IS.meetings.standup(); } });
+    if (id === c.mentor && IS.meetings.oneOnOneDue()) opts.unshift({ label: '📋 Daily 1:1 check-in', cls: 'gold', onClick: (cl) => { cl(); IS.meetings.oneOnOne(); } });
     if (id === c.mentor) opts.unshift({ label: '🧑‍🏫 Ask for help with a task (15 min)', cls: 'primary', disabled: !on, onClick: (cl) => { cl(); pickTask(id, 'Sure! Which one are you working on?', (t) => helpResult(E().askMentor(t.id), t)); } });
     if (c.interns.includes(id)) {
       opts.unshift({ label: '🙋 Ask for help with a task (10 min)', cls: 'primary', disabled: !on, onClick: (cl) => { cl(); pickTask(id, 'Happy to help if I can. Which one?', (t) => helpResult(E().askPeer(t.id, id), t)); } });
-      opts.push({ label: '☕ Coffee run together ($6, 15 min)', disabled: !on || s.wallet < 6, onClick: (cl) => { cl(); coffeeWith(id); } });
+      opts.push({ label: '☕ Coffee or snack break together', disabled: !on, onClick: (cl) => { cl(); breakWith(id); } });
     }
     if (id === c.manager) {
       opts.unshift({ label: '📅 Ask for an extension', disabled: !on, onClick: (cl) => { cl(); pickTask(id, 'Which assignment do you need more time on?', (t) => { const r = E().requestExtension(t.id); talk({ id, text: r.text }); after(); }); } });
@@ -361,12 +359,24 @@ IS.ui = (function () {
     talk({ id: r.who || E().cast().mentor, html: r.html || U.esc(r.text), options: [{ label: 'Thanks!', cls: 'primary', onClick: (c) => { c(); after(); } }] });
   }
 
-  function coffeeWith(id) {
+  // Pick something at the café, then walk over, order, sit down and talk.
+  function breakWith(id) {
     const s = st();
-    s.wallet -= 6;
-    E().applyEffects({ energy: 12, morale: 4, rel: { [id]: 5 }, networking: 0 });
-    E().spend(15);
-    talk({ id, text: U.pick(['This was nice. We should do it more often.', 'Okay I needed that. Thanks for the coffee!', 'Real talk: I was nervous about my presentation. Talking helped.']), options: [{ label: '☕ Anytime', cls: 'primary', onClick: (c) => { c(); after(); } }] });
+    const items = IS.store.items.filter((i) => i.cat === 'cafe');
+    talk({ id, place: '☕ Studio Café', text: U.pick(['Yes! I could use a break. What are you getting?', 'Great idea. Coffee or snack?', 'Always. What sounds good?']), options: items.map((it) => ({
+      label: `${it.emoji} ${U.esc(it.name)} · ${U.money(it.price)}`, cls: 'choice', disabled: s.wallet < it.price,
+      onClick: (c) => { c(); cafeBreak(it, id); },
+    })).concat([{ label: 'Maybe later', cls: 'ghost' }]) });
+  }
+
+  function cafeBreak(it, withId) {
+    const r = E().buy(it.id);
+    if (!r.ok) return toast(r.text, 'bad');
+    if (withId) E().applyEffects({ rel: { [withId]: 5 }, morale: 2 });
+    render();
+    const run = () => IS.office.cafeBreak(it, withId, withId ? (done) => IS.talk.chatOver(withId, done) : null).then(() => { toast(`${it.emoji} Break over. Back to work!`, 'good'); after(); });
+    if (IS.office.isMounted()) run();
+    else after();
   }
 
   function howAmIDoing() {
@@ -415,13 +425,18 @@ IS.ui = (function () {
     const j = s.job;
     if (j.clockedIn || busy) return;
     const scenes = E().clockIn();
+    IS.clock.reset();
     IS.office.setPos(360, 640);
     render();
     toast(`🪪 Badged in: ${U.weekday(j.day)}, Day ${j.day}`, 'good');
     playScenes(scenes, () => {
       const newTasks = E().tasks().filter((t) => t.day === j.day);
-      if (newTasks.length) toast(`📌 ${newTasks.length} new assignment${newTasks.length > 1 ? 's' : ''}. Check your computer.`, 'gold');
-      after({ then: () => { if (j.day === U.LAST_DAY) endDay(); } });
+      const go = () => {
+        if (newTasks.length) toast(`📌 ${newTasks.length} new assignment${newTasks.length > 1 ? 's' : ''}. Check your computer.`, 'gold');
+        after({ then: () => { if (j.day === U.LAST_DAY) endDay(); } });
+      };
+      if (IS.meetings.standupDue()) IS.meetings.standup(go);
+      else go();
     });
   }
 
@@ -509,7 +524,7 @@ IS.ui = (function () {
 
   return {
     render, toast, modal, confetti, after, talk, closeDialog, playScenes, playScene, interact, lineHtml, portraitHtml,
-    openComputer, closeComputer, setApp, startDay, confirmClockOut, endDay, goToWork, flushCeremonies,
+    openComputer, closeComputer, setApp, startDay, cafeBreak, confirmClockOut, endDay, goToWork, flushCeremonies,
     setScreen: (sc) => { screen = sc; render(); },
     overlay: () => overlay,
     isBusy: () => busy,

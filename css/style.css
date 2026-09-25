@@ -449,3 +449,46 @@ body:has(.computer) #save-fab .lbl, body:has(.dialog) #save-fab .lbl { display: 
   #save-fab { width: 42px; justify-content: center; padding: 0; }
   .travel { left: 62px; right: 10px; transform: none; }
 }
+
+/* ── Standup ─────────────────────────────────────────────── */
+.standup-row { display: flex; gap: 12px; justify-content: center; margin: 10px 0 4px; flex-wrap: wrap; }
+.standup-row .seat { text-align: center; font-size: .78rem; font-weight: 800; color: var(--sand); }
+.standup-row .seat svg { border-radius: 50%; background: rgba(255, 240, 220, .08); }
+.deck { display: flex; gap: 12px; flex-wrap: wrap; }
+.mini-slide { flex: 1 1 240px; min-height: 140px; background: var(--paper); color: var(--ink); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+.mini-slide .ms-who { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 900; }
+.mini-slide .ms-title { font-family: var(--serif); font-weight: 800; font-size: 1.25rem; color: var(--terracotta-2); margin: 2px 0 6px; }
+.mini-slide .ms-body { white-space: pre-wrap; }
+.deck-slide { background: var(--paper-2); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.deck-slide.off { opacity: .35; pointer-events: none; }
+.deck-slide input, .deck-slide textarea { border: 0; outline: none; background: var(--paper); border-radius: 10px; padding: 8px 10px; font: inherit; color: var(--ink); }
+.deck-slide input { font-weight: 800; }
+.deck-slide input:focus, .deck-slide textarea:focus { box-shadow: 0 0 0 3px rgba(217, 154, 43, .55); }
+.standup .chip { margin: 2px 4px 2px 0; }
+
+/* ── Café breaks ─────────────────────────────────────────── */
+.say { position: absolute; transform: translate(-50%, -100%); background: var(--paper); color: var(--ink); font-weight: 800; font-size: 15px; padding: 8px 12px; border-radius: 14px; box-shadow: var(--shadow); max-width: 260px; text-align: center; animation: pop .2s ease-out; pointer-events: none; }
+.say::after { content: ''; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 8px solid transparent; border-bottom: 0; border-top-color: var(--paper); }
+.actor .held { position: absolute; left: 64%; top: 52%; font-size: 30px; line-height: 1; pointer-events: none; transform-origin: 50% 100%; }
+.actor .held.sip { animation: sip 3.2s ease-in-out infinite; }
+.actor .held.bite { animation: bite 2.6s ease-in-out infinite; }
+@keyframes sip { 0%, 35%, 100% { left: 64%; top: 52%; transform: rotate(0); } 50%, 70% { left: 50%; top: 17%; transform: rotate(-25deg); } }
+@keyframes bite { 0%, 40%, 100% { left: 64%; top: 52%; transform: scale(1); } 55%, 65% { left: 50%; top: 20%; transform: scale(.92); } }
+.actor.sitting svg.person { transform: translateY(15%); }
+.actor.sitting .held { top: 64%; }
+.actor.sitting .tag { transform: translate(-50%, 34px); }
+.dialog.top { top: 84px; bottom: auto; max-height: 52vh; }
+
+/* ── Learning Center sections & search ───────────────────── */
+#learn-search { flex: 1 1 260px; max-width: 460px; border: 0; border-radius: 10px; padding: 8px 12px; background: var(--night-2); color: var(--paper); font: inherit; font-weight: 700; }
+#learn-search::placeholder { color: #b8a38c; }
+#learn-search:focus { outline: none; box-shadow: 0 0 0 3px rgba(217, 154, 43, .55); }
+.side-head { font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .7px; color: var(--cocoa); margin: 12px 8px 2px; }
+.sec-head { margin-top: 22px; color: var(--terracotta-2); }
+.results { display: flex; flex-direction: column; gap: 8px; }
+.result { text-align: left; border: 0; font: inherit; color: inherit; background: var(--paper); border-radius: 14px; padding: 12px 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(42, 25, 15, .07); }
+.result:hover { box-shadow: var(--shadow); }
+.result .r-title { font-family: var(--serif); font-weight: 800; font-size: 1.1rem; margin: 2px 0 4px; }
+.result mark, .topic mark { background: #f6e3bf; color: inherit; border-radius: 4px; padding: 0 2px; }
+.lsec.dev { box-shadow: 0 0 0 3px rgba(217, 154, 43, .7); }
+@media (max-width: 760px) { .side-head { display: none; } #learn-search { order: 3; max-width: none; flex-basis: 100%; } }

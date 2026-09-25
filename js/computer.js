@@ -7,7 +7,7 @@ IS.computer = (function () {
 
   const TYPE_ICON = { coding: '💻', quiz: '📝', review: '🔍', written: '✍️', presentation: '🎤', sql: '🗄️', terminal: '⌨️', web: '🌐', config: '⚙️' };
   const TYPE_LABEL = { coding: 'Coding', quiz: 'Training', review: 'Code Review', written: 'Writing', presentation: 'Presentation', sql: 'SQL', terminal: 'Terminal', web: 'Web', config: 'Config' };
-  const icon = (t) => (t.urgent ? '🚨' : TYPE_ICON[t.type]);
+  const icon = (t) => (t.urgent ? '🚨' : t.daily ? '🎫' : TYPE_ICON[t.type]);
   const typeLabel = (t) => (t.type === 'coding' ? ({ javascript: 'JavaScript', python: 'Python', cpp: 'C++' }[t.lang] || 'Coding') : TYPE_LABEL[t.type]);
   const gradeBadge = (score) => `<span class="grade ${U.gradeClass(score)}">${U.letter(score)} · ${score}%</span>`;
 
@@ -65,7 +65,7 @@ IS.computer = (function () {
         <button class="tab ${tab === 'group' ? 'active' : ''}" data-act="todoTab" data-arg="group">👥 Group (${lists.group.length})</button>
       </div>
       <div class="stack">${lists[tab].map(taskRow).join('') || '<p class="muted">Nothing here yet.</p>'}</div>
-      <div class="panel soft" style="margin-top:16px"><b>How deadlines work:</b> <span class="small">log enough <b>focus time</b> before submitting. Late work loses <b>10% per workday</b> plus a <b>${U.money(E().LATE_FEE)}</b> pay adjustment. After two workdays it's <b>missed</b> (0%, another ${U.money(E().MISSED_FEE)}). Ask your manager for an extension <i>before</i> the deadline.</span></div>`;
+      <div class="panel soft" style="margin-top:16px"><b>How deadlines work:</b> <span class="small">put in enough <b>focus time</b> (real minutes with the task open) before submitting. Late work loses <b>10% per workday</b> plus a <b>${U.money(E().LATE_FEE)}</b> pay adjustment. After two workdays it's <b>missed</b> (0%, another ${U.money(E().MISSED_FEE)}). Ask your manager for an extension <i>before</i> the deadline.</span></div>`;
   };
 
   apps.mail = function () {
@@ -85,7 +85,7 @@ IS.computer = (function () {
   apps.calendar = function () {
     const j = st().job;
     const special = { 1: 'Onboarding', 5: '1:1 with manager', 6: 'Group kickoff', 10: 'Group demo', 15: 'Midpoint showcase', 16: 'Midpoint review · Capstone kickoff', 22: 'On-call week', 33: 'Final presentation', 34: 'Final review & Awards (1 hr)' };
-    let h = `<div class="app-title"><h2>📅 Calendar</h2><span class="small muted">100 hours · 33 × 3h days + a 1h final day</span></div><div class="cal">`;
+    let h = `<div class="app-title"><h2>📅 Calendar</h2><span class="small muted">34 workdays · 1 hour each (9–10 AM)</span></div><div class="cal">`;
     for (let d = 1; d <= U.LAST_DAY; d++) {
       const dues = E().tasks().filter((t) => E().effectiveDue(t).day === d && j.tasks[t.id]);
       h += `<div class="d ${d === j.day ? 'today' : ''} ${d < j.day ? 'past' : ''}"><div class="n">W${U.weekOf(d)} ${U.weekday(d).slice(0, 3)} · Day ${d}</div>
@@ -194,7 +194,7 @@ IS.computer = (function () {
         <button data-act="learn"><span class="ic">📚</span>Learn</button>
         <div class="sep"></div><button data-act="closeComputer" title="Stand up from your desk"><span class="ic">🚶</span>Stand up</button></nav>
       <main class="app" id="app-pane">${body}</main></div>
-      <div class="monitor-foot"><span>🕘 ${j.clockedIn ? U.clock(j.minute) : 'Not badged in'} · Day ${j.day}/34</span><span>⚡ ${Math.round(j.energy)} · 🙂 ${Math.round(j.morale)} · productivity ${Math.round(E().productivity() * 100)}%</span></div></div></div>`;
+      <div class="monitor-foot"><span>🕘 ${j.clockedIn ? `<span data-live="clock">${U.clock(j.minute)}</span>` : 'Not badged in'} · Day ${j.day}/34 <span data-live="clockstate" hidden style="color:var(--gold-2)"></span></span><span>⚡ ${Math.round(j.energy)} · 🙂 ${Math.round(j.morale)} · productivity ${Math.round(E().productivity() * 100)}%</span></div></div></div>`;
   }
 
   function mount(app, arg) {
@@ -223,10 +223,14 @@ IS.computer = (function () {
     IS.ui.modal({
       title: cats.includes('cafe') ? '☕ Studio Café' : cats.includes('experience') ? '🎟️ Outings & Trips' : '🛍️ Studio Store', wide: true, html: body(),
       buttons: [{ label: 'Done', cls: 'primary', onClick: (c) => { c(); IS.ui.after(); } }],
-      onMount: (m) => {
+      onMount: (m, closeModal) => {
         const wire = () => {
           m.querySelectorAll('[data-store-tab]').forEach((b) => { b.onclick = () => { tab = b.dataset.storeTab; m.querySelector('.modal-body').innerHTML = body(); wire(); }; });
-          m.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = E().buy(b.dataset.buy); IS.ui.toast(r.text, r.ok ? 'good' : 'bad'); m.querySelector('.modal-body').innerHTML = body(); wire(); if (IS.office.isMounted()) IS.office.refresh(); }; });
+          m.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => {
+            const it = IS.store.byId(b.dataset.buy);
+            // Café orders play out in the office: order at the counter, sit, enjoy.
+            if (it.cat === 'cafe' && IS.office.isMounted()) { closeModal(); IS.ui.cafeBreak(it, null); return; }
+            const r = E().buy(b.dataset.buy); IS.ui.toast(r.text, r.ok ? 'good' : 'bad'); m.querySelector('.modal-body').innerHTML = body(); wire(); if (IS.office.isMounted()) IS.office.refresh(); }; });
           m.querySelectorAll('[data-equip]').forEach((b) => { b.onclick = () => { E().equip(b.dataset.equip); m.querySelector('.modal-body').innerHTML = body(); wire(); if (IS.office.isMounted()) IS.office.refresh(); }; });
         };
         wire();

@@ -95,7 +95,7 @@ IS.problem = (function () {
     }
     if (kind === 'coding') return IS.runners[p.lang].run(code, p.fnName, all ? p.tests.concat(p.hidden || []) : p.tests);
     if (kind === 'sql') {
-      const exp = IS.sqlExpected && IS.sqlExpected[ctx.trackId] && IS.sqlExpected[ctx.trackId][p.id];
+      const exp = IS.sqlExpected && IS.sqlExpected[ctx.trackId] && IS.sqlExpected[ctx.trackId][p.expectedId || p.id];
       if (!exp) return Promise.resolve({ error: 'Expected results are missing for this problem.' });
       return IS.runners.sql.run(p, code, ctx.db, exp);
     }

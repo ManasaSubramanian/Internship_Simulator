@@ -10,26 +10,13 @@ IS.scenes = (function () {
   const full = (role) => IS.characters[E().resolve(role)].name;
   const me = () => IS.state.get().player.name;
 
-  function nextDue(s) {
-    const j = s.job;
-    const open = E().tasks().filter((t) => j.tasks[t.id] && j.tasks[t.id].status === 'assigned');
-    open.sort((a, b) => E().dueAbs(a) - E().dueAbs(b));
-    return open[0];
-  }
-  function lastDone(s) {
-    const j = s.job;
-    const done = E().tasks().filter((t) => j.tasks[t.id] && j.tasks[t.id].status === 'graded');
-    done.sort((a, b) => j.tasks[b.id].submittedAbs - j.tasks[a.id].submittedAbs);
-    return done[0];
-  }
-
   function onboarding(t) {
     const returning = IS.state.get().career.history.length > 0;
     return {
       title: `Day 1: Welcome to ${t.team}`, place: '🏛️ Studio Lobby', time: 40,
       steps: [
         { who: 'rosa', text: returning ? `${me()}! Welcome back. Internship #${t.n}: ${t.title} on ${t.team}. New team, new language, same badge.` : `Welcome, ${me()}! I'm Rosa, I run the intern program. Here's your badge. Don't lend it to anyone.` },
-        { who: 'rosa', text: `Quick logistics: this internship is 100 hours: 3 hours a day (9:00 AM – 12:00 PM) for 33 days, plus a 1-hour final day for reviews and awards. You're paid ${U.money(t.rate)}/hour, every Friday.` },
+        { who: 'rosa', text: `Quick logistics: this internship is 34 workdays, one focused hour each (9:00 to 10:00 AM). Every day starts with a quick standup and a check-in with your mentor. You're paid ${U.money(t.rate)}/hour, every Friday.` },
         { who: 'rosa', text: 'Deadlines are real. Late work costs grade points and pay, and anything more than two workdays late is marked missed. If you need more time, ask your manager BEFORE the deadline.' },
         { who: 'manager', text: () => `Hi, I'm ${full('manager')}, your manager. ${t.team} is where you'll work in ${t.langLabel}. ${t.blurb}` },
         { choices: [
@@ -47,34 +34,6 @@ IS.scenes = (function () {
           { text: 'Cool, I\'ll find you.', effects: { rel: { mentor: 1 } }, reply: { who: 'mentor', text: 'Sounds good!' } },
         ] },
         { who: 'rosa', text: () => `Your cohort: ${[1, 2, 3, 4].map((i) => n('intern' + i)).join(', ')}. Your desk is in the open office. Your computer has your To-Do list, mail and calendar. Walk around, meet people, and have a great first day! ✨` },
-      ],
-    };
-  }
-
-  function standup(t, s) {
-    const next = nextDue(s);
-    const last = lastDone(s);
-    const i = 1 + (s.job.day % 4);
-    const lines = [
-      'Finished my part of the prototype yesterday, today I\'m writing tests. No blockers!',
-      'Uh, yesterday I investigated things. Today I will investigate them more. Productively.',
-      'Cleaned the dataset yesterday. Today: building the baseline. Blocked on nothing.',
-      'Fixed two flaky sensors in the lab. Today: cable management, the unsung hero of engineering.',
-    ];
-    return {
-      title: 'Daily Standup', place: '🧍 Team huddle, open office', time: 10,
-      steps: [
-        { who: 'manager', text: U.pick(['Morning, everyone! Quick round. Let\'s keep it snappy.', 'Good morning! Updates, plans, blockers.', 'Hi all! Let\'s go around.']) },
-        { who: 'intern' + i, text: lines[i - 1] },
-        { who: 'manager', text: `${me()}, what's your update?` },
-        { choices: [
-          { text: `Yesterday I ${last ? 'wrapped up "' + last.title + '"' : 'got set up'}. Today I'm focused on ${next ? '"' + next.title + '"' : 'reviewing docs and helping out'}. No blockers.`,
-            effects: { rel: { manager: 2 } }, reply: { who: 'manager', text: 'Clear and specific. Thanks!' } },
-          { text: `I'm working on ${next ? '"' + next.title + '"' : 'my tasks'} and could use 15 minutes with ${n('mentor')} to sanity-check my approach.`,
-            effects: { rel: { manager: 2, mentor: 1 } }, reply: { who: 'mentor', text: 'Happy to. Come by my desk any time.' } },
-          { text: 'Uh… just working on stuff.', effects: { rel: { manager: -2 } },
-            reply: { who: 'manager', text: 'Can you be more specific next time? It helps me spot risks early.' } },
-        ] },
       ],
     };
   }
@@ -215,7 +174,7 @@ IS.scenes = (function () {
     return {
       title: '🚨 SEV-2 Incident', place: '📟 Pager alert', time: 5,
       steps: [
-        { who: 'manager', text: `All hands! ${t.incident} I'm assigning the fix to you. ${n('mentor')} will back you up. Check your To-Do list. It's due by 11:00 AM.` },
+        { who: 'manager', text: `All hands! ${t.incident} I'm assigning the fix to you. ${n('mentor')} will back you up. Check your To-Do list. It's due by ${U.clock(40)}.` },
         { choices: [
           { text: 'On it. I\'ll post updates in #incident every 20 minutes.', effects: { rel: { manager: 3 } },
             reply: { who: 'manager', text: 'Perfect. That\'s exactly what incident comms should look like.' } },
@@ -256,7 +215,7 @@ IS.scenes = (function () {
     return {
       title: 'Final Performance Review', place: '📋 Manager\'s office', time: 20,
       steps: [
-        { who: 'manager', text: `${me()}, 100 hours. Wow. Let's walk through your final review.` },
+        { who: 'manager', text: `${me()}, 34 days. Wow. Let's walk through your final review.` },
         { who: 'manager', text: `Final average: ${Math.round(r.overall)}% (${U.letter(r.overall)}). ${r.gradedCount} assignments graded, ${s.job.stats.lateCount} late, ${s.job.stats.missedCount} missed.` },
         { who: 'manager', text: r.overall >= 90 ? 'You exceeded expectations: reliable, well-tested and clearly communicated.' : r.overall >= 80 ? 'You met expectations, and exceeded them in places.' : 'You had real wins, but consistency is the area to grow.' },
         { who: 'manager', text: offerLine },
@@ -304,7 +263,6 @@ IS.scenes = (function () {
     const d = s.job.day;
     const list = [];
     if (d === 1) list.push(onboarding(t));
-    else if (d !== U.LAST_DAY) list.push(standup(t, s));
     const special = { 5: [oneOnOne], 6: [g1Kickoff], 9: [g1Event], 16: [midpointReview, g2Kickoff], 19: [g2Event], 22: [incident], 27: [g2Conflict], 34: [finalReview, 'CEREMONY', farewell] }[d];
     if (special) special.forEach((f) => list.push(f === 'CEREMONY' ? f : f(t, s)));
     else if (d > 1 && d < U.LAST_DAY) {

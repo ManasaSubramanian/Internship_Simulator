@@ -72,7 +72,7 @@ IS.interview = (function () {
     return `<div class="panel">
       <div class="small muted" style="font-weight:900;letter-spacing:.8px;text-transform:uppercase">Application · Internship ${t.n} of 10</div>
       <h1 style="margin:4px 0">${t.icon} ${U.esc(t.title)}</h1>
-      <p style="font-size:1.05rem"><b>${U.esc(t.team)}</b> · ${U.esc(t.langLabel)} · ${U.money(t.rate)}/hr · 100 hours (3 hrs/day)</p>
+      <p style="font-size:1.05rem"><b>${U.esc(t.team)}</b> · ${U.esc(t.langLabel)} · ${U.money(t.rate)}/hr · 34 workdays × 1 hour</p>
       <p>${U.esc(t.blurb)}</p>
       <div class="chips" style="margin-bottom:12px">${t.skills.map((k) => `<span class="pill">${U.esc(k)}</span>`).join('')}</div>
       ${I.waived ? `<div class="panel soft" style="margin-bottom:12px">🎉 <b>You have a return offer!</b> The behavioral round is waived. You only need to pass a <b>${U.esc(t.langLabel)} technical skills check</b> with ${U.esc(IS.characters[t.cast.mentor].name)}.</div>` : ''}
@@ -146,7 +146,7 @@ IS.interview = (function () {
     if (sc.concepts < 75) weak.push(`${t.langLabel} fundamentals`);
     if (sc.code < 70) weak.push('the live problem (test edge cases and read the spec carefully)');
     const letter = passed
-      ? `<h1>🎉 Offer letter</h1><p>Dear ${U.esc(st().player.name)},</p><p>We're delighted to offer you the role of <b>${U.esc(t.title)}</b> on <b>${U.esc(t.team)}</b>: 100 hours at <b>${U.money(t.rate)}/hour</b>, 3 hours a day. Your manager will be ${U.esc(IS.characters[t.cast.manager].name)} and your mentor ${U.esc(IS.characters[t.cast.mentor].name)}.</p><p>Welcome aboard!<br>— Rosa Alvarez, University Programs</p>`
+      ? `<h1>🎉 Offer letter</h1><p>Dear ${U.esc(st().player.name)},</p><p>We're delighted to offer you the role of <b>${U.esc(t.title)}</b> on <b>${U.esc(t.team)}</b>: 34 one-hour workdays at <b>${U.money(t.rate)}/hour</b>. Your manager will be ${U.esc(IS.characters[t.cast.manager].name)} and your mentor ${U.esc(IS.characters[t.cast.mentor].name)}.</p><p>Welcome aboard!<br>— Rosa Alvarez, University Programs</p>`
       : `<h1>📨 Interview result</h1><p>Dear ${U.esc(st().player.name)},</p><p>Thank you for interviewing for <b>${U.esc(t.title)}</b>. We aren't able to move forward this time, but we'd love to see you try again. We've enrolled you in our <b>interview training program</b>. Complete it and you can reapply right away.</p><p>Areas to focus on: ${weak.map(U.esc).join('; ') || 'overall consistency'}.</p><p>— Rosa Alvarez, University Programs</p>`;
     return `<div class="row" style="align-items:flex-end;flex-wrap:nowrap;gap:16px"><div style="flex:none">${IS.people.of('rosa', { height: 220, mood: passed ? 'happy' : 'neutral' })}</div>
       <div class="panel" style="flex:1">${letter}
@@ -162,7 +162,7 @@ IS.interview = (function () {
   // internship, plus STAR interview answers when the behavioral round counts.
   function requiredTopics(I) {
     const t = track();
-    const list = IS.learn.topics(t.id).map((x) => ({ trackId: t.id, topic: x }));
+    const list = IS.learn.topics(t.id).filter((x) => IS.learn.sectionOf(x) !== 'assignments').map((x) => ({ trackId: t.id, topic: x }));
     if (!I.waived) list.unshift({ trackId: 'career', topic: IS.learn.topic('career', 'star') });
     return list.filter((x) => x.topic);
   }
@@ -321,6 +321,7 @@ IS.interview = (function () {
       const I = iv();
       if (!s.career.history.length && !s.awards.some((a) => a.id === 'hired')) IS.engine.grantAward('hired', 'First interview passed');
       if (I.attempt > 1 || I.prevAttemptsThisLevel > 0) IS.engine.grantAward('persistent', 'Passed on attempt #' + I.attempt);
+      s.career.lastInterview = { level: s.career.level, attempts: I.attempt + (I.prevAttemptsThisLevel || 0), trainings: I.trainings, waived: I.waived };
       IS.engine.startJob(s.career.level);
       P().clearShells();
       IS.ui.render();

@@ -4,8 +4,8 @@ window.IS = window.IS || {};
 
 IS.util = (function () {
   const DAY_START_HOUR = 9;
-  const DAY_LENGTH = 180; // a normal workday: 3 paid hours
-  const LAST_DAY = 34; // 33 full days + a 1-hour final day = 100 hours
+  const DAY_LENGTH = 60; // a workday: 1 paid hour (9:00–10:00 AM), in real time
+  const LAST_DAY = 34; // 34 workdays = 34 hours per internship
   const LAST_DAY_LENGTH = 60;
   const DAYS_PER_WEEK = 5;
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -34,7 +34,7 @@ IS.util = (function () {
   const weekday = (day) => WEEKDAYS[(day - 1) % DAYS_PER_WEEK];
   const isFriday = (day) => day % DAYS_PER_WEEK === 0;
   // Absolute work-minute across the internship. Only the last day is shorter,
-  // so every earlier day starts at (day - 1) * 180.
+  // so every earlier day starts at (day - 1) * DAY_LENGTH.
   const abs = (day, minute) => (day - 1) * DAY_LENGTH + minute;
   const dueLabel = (due) => weekday(due.day) + ' (Day ' + due.day + ') ' + clock(due.minute);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));

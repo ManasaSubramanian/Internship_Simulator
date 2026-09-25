@@ -53,13 +53,13 @@ IS.store = {
     { id: 'standing', cat: 'desk', name: 'Standing Desk Converter', price: 160, emoji: '🧍', desc: 'Energy drains 15% slower.', effect: { drain: -0.15 } },
     { id: 'photo', cat: 'desk', name: 'Framed Team Photo', price: 15, emoji: '🖼️', desc: '+3 with every intern on your team.', effect: { teamRel: 3 } },
 
-    { id: 'drip', cat: 'cafe', name: 'Drip Coffee', price: 3, emoji: '☕', desc: '+20 energy. 5 minutes.', effect: { energy: 20, time: 5 } },
-    { id: 'coldbrew', cat: 'cafe', name: 'Cold Brew', price: 5, emoji: '🧋', desc: '+30 energy. 5 minutes.', effect: { energy: 30, time: 5 } },
-    { id: 'latte', cat: 'cafe', name: 'Caramel Latte', price: 6, emoji: '🥛', desc: '+25 energy, +4 morale. 5 minutes.', effect: { energy: 25, morale: 4, time: 5 } },
-    { id: 'matcha', cat: 'cafe', name: 'Matcha Latte', price: 6, emoji: '🍵', desc: '+20 energy, +6 morale. 5 minutes.', effect: { energy: 20, morale: 6, time: 5 } },
+    { id: 'drip', cat: 'cafe', name: 'Drip Coffee', price: 3, emoji: '☕', desc: '+20 energy.', effect: { energy: 20, time: 5 } },
+    { id: 'coldbrew', cat: 'cafe', name: 'Cold Brew', price: 5, emoji: '🧋', desc: '+30 energy.', effect: { energy: 30, time: 5 } },
+    { id: 'latte', cat: 'cafe', name: 'Caramel Latte', price: 6, emoji: '🥛', desc: '+25 energy, +4 morale.', effect: { energy: 25, morale: 4, time: 5 } },
+    { id: 'matcha', cat: 'cafe', name: 'Matcha Latte', price: 6, emoji: '🍵', desc: '+20 energy, +6 morale.', effect: { energy: 20, morale: 6, time: 5 } },
     { id: 'churro', cat: 'cafe', name: 'Churro', price: 5, emoji: '🥖', desc: '+10 energy, +8 morale.', effect: { energy: 10, morale: 8, time: 5 } },
     { id: 'pretzel', cat: 'cafe', name: 'Soft Pretzel', price: 7, emoji: '🥨', desc: '+15 energy, +6 morale.', effect: { energy: 15, morale: 6, time: 5 } },
-    { id: 'teamcoffee', cat: 'cafe', name: 'Coffee Run for the Team', price: 22, emoji: '🛍️', desc: '+10 energy, +4 with every intern on your team. 15 minutes.', effect: { energy: 10, teamRel: 4, time: 15 } },
+    { id: 'teamcoffee', cat: 'cafe', name: 'Coffee Run for the Team', price: 22, emoji: '🛍️', desc: '+10 energy, +4 with every intern on your team.', effect: { energy: 10, teamRel: 4, time: 15 } },
 
     { id: 'movie', cat: 'experience', name: 'Movie Night', price: 15, emoji: '🎬', desc: 'Catch the new animated release. +12 morale.', effect: { morale: 12 }, memory: 'Saw the new animated film on opening night' },
     { id: 'minigolf', cat: 'experience', name: 'Mini Golf with Interns', price: 20, emoji: '⛳', desc: '+10 morale, +3 with every intern.', effect: { morale: 10, teamRel: 3 }, memory: 'Lost at mini golf to the intern cohort (again)' },

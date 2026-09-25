@@ -6,8 +6,8 @@ IS.engine = (function () {
   const MISSED_FEE = 25;
   const TAX_RATE = 0.1265; // FICA 7.65% + ~5% estimated income tax withholding
   const SPOT_BONUS = 50;
-  const WORK_DRAIN = 0.4;
-  const MEETING_DRAIN = 0.15;
+  const WORK_DRAIN = 0.8; // energy per focused minute (a 1-hour day drains ~50)
+  const MEETING_DRAIN = 0.3;
 
   const S = () => IS.state.get();
   const J = () => IS.state.get().job;
@@ -18,7 +18,9 @@ IS.engine = (function () {
     const lvl = s.job ? s.job.level : s.career.level;
     return IS.trackAt(lvl);
   }
-  const tasks = () => (J() ? track().tasks : []);
+  // Everything assigned during this internship: the track's authored tasks plus
+  // one small daily ticket per workday (see IS.daily).
+  const tasks = () => (J() ? track().tasks.concat(IS.daily.forTrack(track(), S().seed)) : []);
   const taskById = (id) => tasks().find((t) => t.id === id);
   const cast = () => track().cast;
   const team = () => [cast().manager, cast().mentor].concat(cast().interns);
@@ -86,7 +88,7 @@ IS.engine = (function () {
       if (e.health) Object.keys(e.health).forEach((g) => { j.groups[g].health = U.clamp(j.groups[g].health + e.health[g], 0, 100); });
       if (e.flag) j.flags[e.flag] = true;
       if (e.networking) j.stats.networking += e.networking;
-      if (e.time && j.clockedIn) advance(e.time, 'meeting');
+      if (e.time && j.clockedIn) spend(e.time);
     }
     if (e.money) S().wallet += e.money;
     checkAchievements();
@@ -105,16 +107,32 @@ IS.engine = (function () {
     if (!j || !j.clockedIn || mins <= 0) return false;
     const used = Math.min(mins, dayLen() - j.minute);
     j.minute += used;
-    const drain = (kind === 'work' ? WORK_DRAIN : MEETING_DRAIN) * (1 + bonus('drain'));
+    const drain = (kind === 'work' ? WORK_DRAIN : kind === 'idle' ? 0.1 : MEETING_DRAIN) * (1 + bonus('drain'));
     j.energy = U.clamp(j.energy - used * drain, 0, 100);
     checkDeadlines(now());
     return j.minute >= dayLen();
   }
 
+  // Time costs written for 3-hour days (like "ask the mentor: 15 min") are
+  // scaled to the 1-hour day. Conversations and meetings take real time instead.
   function spend(mins) {
-    const ended = advance(mins, 'meeting');
+    const ended = advance(Math.max(1, Math.round(mins / 3)), 'meeting');
     IS.state.save();
     return ended;
+  }
+
+  // One real minute on the clock (called by IS.clock). Focus time goes to the
+  // assignment that's open, scaled by productivity (energy, morale, desk items).
+  function passMinute(taskId) {
+    const j = J();
+    if (!j || !j.clockedIn || j.minute >= dayLen()) return true;
+    const r = taskId && rec(taskId);
+    const task = taskId && taskById(taskId);
+    if (r && task && r.status === 'assigned') {
+      r.progress = Math.min(task.effort, r.progress + productivity());
+      j.stats.focusMinutes = (j.stats.focusMinutes || 0) + 1;
+    }
+    return advance(1, r ? 'work' : 'idle');
   }
 
   function checkDeadlines(t) {
@@ -293,28 +311,14 @@ IS.engine = (function () {
   }
 
   // ── Work ───────────────────────────────────────────────
-  function workOn(id, mins) {
-    const j = J();
-    const r = rec(id);
-    const task = taskById(id);
-    if (!j.clockedIn || !r || r.status !== 'assigned') return null;
-    const used = Math.min(mins, remaining());
-    if (used <= 0) return null;
-    const gained = used * productivity();
-    r.progress = Math.min(task.effort, r.progress + gained);
-    const ended = advance(used, 'work');
-    IS.state.save();
-    return { used, gained, ended };
-  }
-
   function canSubmit(id) {
     const j = J();
     const r = rec(id);
     const task = taskById(id);
     if (!r || r.status !== 'assigned') return { ok: false, why: 'Not open' };
     if (!j.clockedIn) return { ok: false, why: 'Badge in first to submit work.' };
-    if (r.progress < task.effort - 0.01) return { ok: false, why: `Log more focus time first (${Math.floor(r.progress)}/${task.effort} min).` };
-    if (remaining() < 5) return { ok: false, why: 'Not enough time left today (submitting takes 5 min).' };
+    if (r.progress < task.effort - 0.01) return { ok: false, why: `Keep working: this needs ${task.effort} min of focus time (${Math.floor(r.progress)} so far). Focus time grows while the task is open.` };
+    if (remaining() < 1) return { ok: false, why: 'Your shift is over. Submit tomorrow.' };
     return { ok: true };
   }
 
@@ -322,7 +326,7 @@ IS.engine = (function () {
     const j = J();
     const r = rec(id);
     const task = taskById(id);
-    advance(5, 'meeting');
+    advance(1, 'meeting');
     const t = now();
     const due = dueAbs(task);
     const daysLate = t > due && !result.testPass ? Math.ceil((t - due) / U.DAY_LENGTH) : 0;
@@ -468,7 +472,7 @@ IS.engine = (function () {
   function chat(npc) {
     const j = J();
     if (!j.clockedIn) return { text: 'Hey! Badge in with Marcus first. Then let\'s talk.' };
-    if (remaining() < 10) return { text: 'We\'re almost out of time today. Let\'s catch up tomorrow!' };
+    if (remaining() < 1) return { text: 'We\'re out of time today. Let\'s catch up tomorrow!' };
     const c = IS.characters[npc];
     const line = U.pick(c.chat);
     if (!j.chattedToday[npc]) {
@@ -479,7 +483,6 @@ IS.engine = (function () {
       j.stats.metNpc[npc] = true;
       j.stats.networking++;
     }
-    spend(10);
     checkAchievements();
     return { text: line };
   }
@@ -503,7 +506,7 @@ IS.engine = (function () {
     if ((wearable || it.cat === 'desk') && s.owned.includes(it.id)) return { ok: false, text: 'You already own this.' };
     if (s.wallet < it.price) return { ok: false, text: `Not enough money. You have ${U.money(s.wallet)}.` };
     if (it.cat === 'cafe' && !(j && j.clockedIn)) return { ok: false, text: 'The café is for people on the clock. Badge in first!' };
-    if (it.cat === 'cafe' && remaining() < it.effect.time) return { ok: false, text: 'Not enough time left today.' };
+    if (it.cat === 'cafe' && remaining() < 3) return { ok: false, text: 'Not enough time left today.' };
     if (it.cat === 'experience' && j && j.clockedIn) return { ok: false, text: 'Outings happen after work.' };
     s.wallet = Math.round((s.wallet - it.price) * 100) / 100;
     if (wearable) {
@@ -516,10 +519,8 @@ IS.engine = (function () {
     } else if (it.cat === 'cafe') {
       j.stats.cafe++;
       const e = Object.assign({}, it.effect);
-      const t = e.time;
-      delete e.time;
+      delete e.time; // the break itself takes real time
       applyEffects(e);
-      spend(t);
     } else if (it.cat === 'experience') {
       if (j) applyEffects(it.effect);
       else if (it.effect.teamRel) applyEffects({});
@@ -597,12 +598,17 @@ IS.engine = (function () {
     const j = J();
     if (j.final) return j.final;
     const tk = tasks();
-    const required = tk.filter((t) => !t.optional);
+    const required = tk.filter((t) => !t.optional && !t.daily);
     const score = (t) => {
       const r = j.tasks[t.id];
       return r && (r.status === 'graded' || r.status === 'missed') ? r.score : 0;
     };
-    const overall = U.avg(required.map(score));
+    // Final grade: 75% assignments, 10% daily tickets, 15% daily standups.
+    const taskAvg = U.avg(required.map(score));
+    const tickets = tk.filter((t) => t.daily);
+    const ticketAvg = tickets.length ? U.avg(tickets.map(score)) : taskAvg;
+    const suAvg = IS.meetings.standupAvg(j);
+    const overall = 0.75 * taskAvg + 0.1 * ticketAvg + 0.15 * (suAvg == null ? taskAvg : suAvg);
     const byCat = (pred) => {
       const list = tk.filter((t) => pred(t) && j.tasks[t.id] && ['graded', 'missed'].includes(j.tasks[t.id].status));
       return list.length ? U.avg(list.map(score)) : 0;
@@ -647,7 +653,7 @@ IS.engine = (function () {
 
   return {
     LATE_FEE, MISSED_FEE, track, tasks, taskById, cast, team, resolve, now, rec, dueAbs, effectiveDue, productivity, bonus, remaining, dayLen,
-    applyEffects, changeRel, rel, advance, spend, clockIn, clockOut, workOn, canSubmit, submit, startJob, finishJob,
+    applyEffects, changeRel, rel, advance, spend, passMinute, clockIn, clockOut, canSubmit, submit, startJob, finishJob,
     askMentor, askPeer, searchWiki, askDuck, hasDuck, requestExtension, chat, itHelp, buy, equip,
     gradeSummary, grantAward, checkAchievements, finalResult, addInbox, label,
   };

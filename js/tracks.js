@@ -2,6 +2,7 @@
 // Role placeholders in tasks (from: 'manager' | 'mentor' | 'intern1'..'intern4')
 // are resolved to the track's cast when registered.
 IS.tracks = [];
+const U_DAY = 60; // minutes in a workday (matches IS.util.DAY_LENGTH)
 
 IS.registerTrack = function (def) {
   const roles = {
@@ -10,7 +11,18 @@ IS.registerTrack = function (def) {
     rosa: 'rosa', harriet: 'harriet', theo: 'theo', ava: 'ava', lena: 'lena',
   };
   const who = (r) => roles[r] || r;
+  // Content is authored for 3-hour days; workdays are now 1 hour (9–10 AM) of
+  // real, active time. Deadlines keep their place in the day (e.g. end of day)
+  // and focus-time estimates are halved so each day holds a realistic load.
+  const SCALE = U_DAY / 180;
+  const timeText = (s) => String(s).replace(/(\d{1,2}):00 (AM|PM)/g, (m, h, ap) => {
+    const minute = ((+h % 12) + (ap === 'PM' ? 12 : 0) - 9) * 60;
+    return minute >= 0 && minute <= 180 ? IS.util.clock(Math.round(minute * SCALE)) : m;
+  });
   def.tasks.forEach((t) => {
+    t.due = { day: t.due.day, minute: Math.round(t.due.minute * SCALE) };
+    t.effort = Math.max(5, Math.round(t.effort / 2 / 5) * 5);
+    if (t.brief) t.brief = timeText(t.brief);
     t.from = who(t.from || 'manager');
     if (t.peer) t.peer.who = who(t.peer.who);
     if (t.questions && t.type === 'presentation') t.questions.forEach((q) => { q.who = who(q.who); });

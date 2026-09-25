@@ -16,15 +16,18 @@
     <li>Badge in with <b>Marcus</b> at security to start your day. Your <b>computer</b> is at your desk: To-Do list, mail, calendar, HR portal and team directory.</li>
     <li>Talk to your <b>mentor</b> and fellow interns for help, your <b>manager</b> for feedback and extensions, <b>Gus</b> for coffee, <b>Lena</b> for IT, and <b>Rosa</b> for awards.</li></ul>
     <h3>⏱️ Time & pay</h3>
-    <ul><li>Each internship is <b>100 hours</b>: 3 hours a day (9:00 AM – 12:00 PM) for 33 days, plus a 1-hour final day for reviews and the awards ceremony.</li>
+    <ul><li>Each internship is <b>34 workdays</b> of <b>one real hour</b> (9:00–10:00 AM on the game clock). Once you badge in, one real minute is one work minute.</li><li>Work only counts while an assignment is <b>open on your computer</b> and you're active. Each task needs its full focus time before you can submit. The clock pauses if you switch tabs or are idle for 2 minutes.</li><li>Every day: a 5-minute <b>standup</b> where everyone presents 1–2 slides (graded), a <b>1:1 with your mentor</b>, your assignments, and a small <b>daily ticket</b>.</li>
     <li>Paid hourly (the rate rises with each internship), every <b>Friday</b>, after taxes. Leaving early means fewer paid hours.</li></ul>
     <h3>📋 Work & deadlines</h3>
     <ul><li>Log <b>focus time</b> on an assignment, do the work, then submit. Everything is graded with a visible rubric.</li>
     <li>Late work: <b>−10% per workday</b> and a <b>$10</b> pay adjustment. More than 2 workdays late = <b>missed</b> (0% and another $25). Ask for an extension <i>before</i> the deadline.</li></ul>
     <h3>📚 Learning Center</h3>
-    <ul><li>Open it with <b>📚</b> in the office, the <b>Learn</b> app on your computer, or from home and the career center. Every internship has beginner lessons, plus career skills.</li>
-    <li>Each topic explains the idea in plain words, walks through a code example line by line, then gives you <b>3 practice problems</b> that loop. Stuck? Use the hint, or peek at the solution after one try.</li>
-    <li>Assignments list related lessons under <b>Get help</b>. Studying is free and doesn't use work time.</li></ul>
+    <ul><li>Open it with <b>📚</b> in the office, the <b>Learn</b> app on your computer, or from home and the career center. Each internship has three sections: <b>Concepts</b>, <b>Interview prep</b> and <b>Assignment prep</b>, plus career skills.</li>
+    <li>Each topic explains the idea in plain words, walks through an example line by line, then gives you <b>3 practice problems</b> that loop. Stuck? Use the hint, or peek at the solution after one try.</li>
+    <li>Use the <b>search box</b> to find every lesson about a keyword, across all subjects. Assignments also list related lessons under <b>Get help</b>.</li></ul>
+    <h3>💬 People</h3>
+    <ul><li>Talk to anyone. Interns share their previous internships, how they got this one and their specialty. Mentors and managers talk about their careers and craft. People ask about <i>your</i> experience too.</li>
+    <li>Invite an intern for a <b>coffee or snack break</b>: you'll walk to the café, order from Gus, sit down and talk while you eat and drink.</li></ul>
     <h3>💾 Saving</h3>
     <ul><li>The game saves automatically in this browser. The <b>💾 Export save</b> button (bottom-left, on every screen) downloads a backup file. Load it with ☰ Menu → Import save.</li></ul>
     <h3>🛍️ Spending</h3>
@@ -145,12 +148,6 @@
     },
     readAll: () => { st().job.inbox.forEach((m) => { m.read = true; }); ui.after(); },
     // workspace
-    work: (arg) => {
-      const [id, m] = arg.split('|');
-      const r = E.workOn(id, +m);
-      if (r) ui.toast(`⏱️ Worked ${r.used} min → +${Math.round(r.gained)} min of progress`, 'good');
-      ui.after();
-    },
     runTests: (id) => W.runTests(id),
     runSql: (id) => W.runSql(id),
     runWeb: (id) => W.runWeb(id),

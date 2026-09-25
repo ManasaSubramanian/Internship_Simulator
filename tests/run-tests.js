@@ -16,6 +16,7 @@ const trackFiles = fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) 
 trackFiles.forEach((f) => req('js/data/tracks/' + f));
 fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) => f.endsWith('.expected.js')).forEach((f) => req('js/data/tracks/' + f));
 fs.readdirSync(path.join(ROOT, 'js/data/learn')).filter((f) => f.endsWith('.js')).forEach((f) => req('js/data/learn/' + f));
+['js/data/talk.js', 'js/learn.js', 'js/daily.js', 'js/meetings.js'].forEach(req);
 req('js/grading.js');
 const jsRun = req('js/runners/javascript.js');
 const pyRun = req('js/runners/python.js');
@@ -77,7 +78,7 @@ async function run(track, p, code) {
   }
   if (kind === 'sql') {
     if (!SQL) return null;
-    const exp = IS.sqlExpected && IS.sqlExpected[track.id] && IS.sqlExpected[track.id][p.id];
+    const exp = IS.sqlExpected && IS.sqlExpected[track.id] && IS.sqlExpected[track.id][p.expectedId || p.id];
     if (!exp) return { error: 'no expected results generated (run npm run gen:sql)' };
     return sqlRun.grade(SQL, p.db || track.db, p, code, exp);
   }
@@ -120,8 +121,10 @@ async function checkTechnical(track, p, sols, label) {
 // Learning Center: every topic explains in words, shows code (technical
 // subjects), and has 1-3 practice problems whose solutions pass and starters fail.
 async function checkLearn(trackId, track) {
-  const topics = (IS.learnData || {})[trackId] || [];
-  check(topics.length >= 4, `learn/${trackId} has at least 4 topics (has ${topics.length})`);
+  const topics = IS.learn.topics(trackId);
+  const bySection = (s) => topics.filter((t) => IS.learn.sectionOf(t) === s).length;
+  check(bySection('concepts') >= 4, `learn/${trackId} has at least 4 concept topics`);
+  if (trackId !== 'career') check(bySection('interview') >= 4 && bySection('assignments') >= 4, `learn/${trackId} has interview prep and assignment prep sections`);
   const ids = new Set();
   for (const t of topics) {
     const L = `learn/${trackId}/${t.id}`;
@@ -137,11 +140,12 @@ async function checkLearn(trackId, track) {
       const P = `${L}/${p.id}`;
       check(!ids.has(p.id), P + ' unique id');
       ids.add(p.id);
-      check(p.title && p.brief && p.hint && p.solution != null, P + ' has title, brief, hint and solution');
+      check(p.title && p.brief && p.hint && (p.solution != null || p.noSolution), P + ' has title, brief, hint and solution');
       if (p.type === 'choice') {
         check(p.answer >= 0 && p.answer < p.options.length && !!p.explain, P + ' choice answer valid and explained');
         continue;
       }
+      if (p.noSolution) continue; // real interview problems: checked with the interview above
       const res = await run(track, p, p.solution);
       if (!res) continue;
       check(!res.error, `${P} solution runs: ${res.error}`);
@@ -219,12 +223,29 @@ function checkSoft(track, t) {
     check(track.interview.concepts.length >= 6, track.id + ' has 6+ concept questions');
     track.interview.concepts.forEach((q, i) => check(q.answer >= 0 && q.answer < q.options.length, `${track.id} concept ${i} answer valid`));
     await checkLearn(track.id, track);
+    // Conversations: every intern, mentor and manager has something real to say.
+    track.cast.interns.forEach((id) => {
+      const d = IS.talkData.interns[id];
+      check(d && d.prev && d.path && d.specLine && IS.learn.topic(track.id, d.spec), `talk/${id} has previous-internship, application and specialty content`);
+    });
+    const md = IS.talkData.mentors[track.cast.mentor];
+    check(md && md.journey && md.advice && IS.learn.topic(track.id, md.craft), `talk/${track.cast.mentor} mentor content`);
+    check(IS.talkData.managers[track.cast.manager] && IS.talkData.managers[track.cast.manager].story, `talk/${track.cast.manager} manager content`);
+    // Daily tickets: one per workday (2..33), each from a tested practice problem.
+    const tickets = IS.daily.forTrack(track, 12345);
+    check(tickets.length === 32 && tickets.every((x) => x.daily && x.tests !== undefined || x.checks || x.objectives || x.type === 'sql'), `${track.id} has 32 daily tickets`);
+    check(tickets.every((x) => x.due.day <= 33 && x.effort > 0 && x.hints.length && x.peer.who), `${track.id} daily tickets are well-formed`);
     console.log(`${failures === before ? '✔' : '✗'} ${track.n}. ${track.langLabel} (${track.tasks.length} tasks, ${tech} technical)`);
   }
   await checkLearn('career', null);
   // Written behavioral answer rubric
   check(IS.grading.written({ rubric: IS.behavioral.freeResponse.rubric }, '').score <= 15, 'behavioral free response: empty scores low');
   IS.behavioral.questions.forEach((q, i) => check(Math.max(...q.options.map((o) => o.pts)) === 10, `behavioral Q${i} has a best answer`));
+  // Standup grading rewards a specific, structured update
+  const work = { all: [{ title: 'Welcome Badge Name Formatter' }], open: [], done: [] };
+  const good = IS.meetings.gradeStandup([{ title: 'Yesterday', body: 'Finished the Welcome Badge Name Formatter, all tests pass.' }, { title: 'Today', body: 'Next I will start my daily ticket. No blockers.' }], work);
+  const bad = IS.meetings.gradeStandup([{ title: '', body: 'stuff' }], work);
+  check(good.score === 100 && bad.score <= 20, `standup grading (good ${good.score}, bad ${bad.score})`);
   // Testing shortcut code
   check(IS.util.hasTestCode('my answer 3.14159265358979') && IS.util.hasTestCode(['ls', '3.14159265358979']) && !IS.util.hasTestCode('3.14159'), 'test pass code detection');
   // Shell + YAML basics

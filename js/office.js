@@ -26,6 +26,7 @@ IS.office = (function () {
   let promptEl = null;
   let nearest = null;
   let paused = false;
+  let busyScene = false;
 
   const depth = (y) => 0.84 + 0.2 * U.clamp((y - Y_MIN) / (Y_MAX - Y_MIN), 0, 1);
 
@@ -159,7 +160,7 @@ IS.office = (function () {
         { id: 'marcus', x: 300, y: 548 },
         { id: 'rosa', x: 500, y: 540 },
         { id: 'gus', x: 900, y: 532 },
-        { id: c.interns[2], x: 1080, y: 690, idle: true },
+        { id: c.interns[2], x: 1220, y: 700, idle: true },
         { id: 'ava', x: 1400, y: 700, wander: [760, 1900] },
         { id: c.interns[0], x: 1660, y: 580 },
         { id: c.interns[1], x: 1900, y: 580 },
@@ -247,17 +248,21 @@ IS.office = (function () {
     const c = IS.characters[n.id];
     const j = st().job;
     const alert = j && j.inbox.some((m) => !m.read && m.from === n.id);
-    n.el.innerHTML = IS.people.svg(c.look, { height: 180, walking: n.walking }) +
+    n.el.innerHTML = IS.people.svg(c.look, { height: 180, walking: n.walking }) + heldHtml(n) +
       `<div class="tag ${alert ? 'alert' : ''}">${U.esc(c.short)}<span class="role">${U.esc(c.role)}</span></div>`;
+    n.el.classList.toggle('sitting', !!n.sitting);
     n.el.style.transform = `translate(-50%, -100%) scale(${depth(n.y)})`;
     n.el.style.transformOrigin = '50% 100%';
   }
 
+  const heldHtml = (a) => (a.held ? `<div class="held ${a.using || ''}">${a.held}</div>` : '');
+
   function renderPlayer() {
-    const look = JSON.stringify(IS.state.playerLook()) + P.walking;
+    const look = JSON.stringify(IS.state.playerLook()) + P.walking + (P.held || '') + (P.using || '') + !!P.sitting;
     if (look === P.look) return;
     P.look = look;
-    P.el.innerHTML = IS.people.svg(IS.state.playerLook(), { height: 180, walking: P.walking }) + `<div class="tag" style="background:var(--terracotta)">${U.esc(st().player.name)} <span class="role" style="color:#fff3df">you</span></div>`;
+    P.el.classList.toggle('sitting', !!P.sitting);
+    P.el.innerHTML = IS.people.svg(IS.state.playerLook(), { height: 180, walking: P.walking }) + heldHtml(P) + `<div class="tag" style="background:var(--terracotta)">${U.esc(st().player.name)} <span class="role" style="color:#fff3df">you</span></div>`;
   }
 
   function place() {
@@ -307,6 +312,7 @@ IS.office = (function () {
 
   // ── Movement ─────────────────────────────────────────────
   function walkTo(x, y, onArrive) {
+    if (busyScene) return;
     P.tx = U.clamp(x, 40, WORLD_W - 40);
     P.ty = U.clamp(y, Y_MIN, Y_MAX);
     P.onArrive = onArrive || null;
@@ -385,7 +391,7 @@ IS.office = (function () {
     }
     // wandering NPCs
     npcs.forEach((n) => {
-      if (!n.wander || paused) return;
+      if (!n.wander || paused || n.cut || n.inScene) return;
       if (n.tx == null) {
         n.wait -= dt;
         if (n.wait <= 0) {
@@ -414,6 +420,39 @@ IS.office = (function () {
         }
       }
     });
+    // scripted movement (café breaks)
+    [P].concat(npcs).forEach((a) => {
+      if (!a.cut) return;
+      const dx = a.cut.tx - a.x;
+      const dy = a.cut.ty - a.y;
+      const d = Math.hypot(dx, dy);
+      const svg = a.el.querySelector('.person');
+      if (d < 3) {
+        a.x = a.cut.tx;
+        a.y = a.cut.ty;
+        const res = a.cut.res;
+        a.cut = null;
+        if (svg) svg.classList.remove('walking');
+        if (a === P) P.walking = false;
+        res();
+      } else {
+        const step = Math.min(d, 210 * dt);
+        a.x += (dx / d) * step;
+        a.y += (dy / d) * step;
+        if (svg) svg.classList.add('walking');
+      }
+      if (a === P) {
+        place();
+        st().pos = { x: Math.round(P.x), y: Math.round(P.y) };
+      } else {
+        a.el.style.left = a.x + 'px';
+        a.el.style.top = a.y + 'px';
+        a.el.style.zIndex = Math.round(a.y) + 1;
+        a.el.style.transform = `translate(-50%, -100%) scale(${depth(a.y)})`;
+        const h = hots.find((x) => x.id === a.id);
+        if (h) { h.x = a.x; h.y = a.y; }
+      }
+    });
     camera();
     updatePrompt();
     raf = requestAnimationFrame(tick);
@@ -426,7 +465,7 @@ IS.office = (function () {
       const d = Math.hypot(h.x - P.x, (h.y - P.y) * 1.4);
       if (d < bd) { bd = d; best = h; }
     });
-    nearest = bd < 130 && !paused ? best : null;
+    nearest = bd < 130 && !paused && !busyScene ? best : null;
     if (!promptEl) return;
     if (!nearest) {
       promptEl.style.display = 'none';
@@ -446,7 +485,7 @@ IS.office = (function () {
   }
 
   function onClick(ev) {
-    if (blocked()) return;
+    if (blocked() || busyScene) return;
     const actor = ev.target.closest('[data-npc]');
     if (actor) return goToHotspot(actor.dataset.npc);
     const hot = ev.target.closest('[data-hot]');
@@ -459,11 +498,11 @@ IS.office = (function () {
     if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return;
     const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'w', 'a', 's', 'd'].includes(k)) {
-      if (!root || paused) return;
+      if (!root || paused || busyScene) return;
       keys[k] = down;
       ev.preventDefault();
     }
-    if (down && (k === 'e' || k === 'Enter') && nearest && !blocked() && root) {
+    if (down && (k === 'e' || k === 'Enter') && nearest && !blocked() && !busyScene && root) {
       ev.preventDefault();
       IS.ui.interact(nearest.id);
     }
@@ -498,6 +537,85 @@ IS.office = (function () {
     world = null;
   }
 
+  // ── Café breaks: order at the counter, grab it, sit, sip and talk ──────
+  const CAFE = { order: [[868, 600], [948, 606]], seats: [[940, 712], [1060, 712]] };
+  const actor = (id) => (id === 'player' ? P : npcs.find((n) => n.id === id));
+  const moveTo = (id, x, y) => new Promise((res) => {
+    const a = actor(id);
+    if (!a || !world) return res();
+    a.cut = { tx: x, ty: y, res };
+  });
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  function say(id, text, ms) {
+    const a = actor(id) || npcs.find((n) => n.id === id);
+    if (!a || !world) return wait(ms || 1600);
+    const b = document.createElement('div');
+    b.className = 'say';
+    b.textContent = text;
+    b.style.left = a.x + 'px';
+    b.style.top = (a.y - 205 * depth(a.y)) + 'px';
+    b.style.zIndex = 3000;
+    world.appendChild(b);
+    return wait(ms || 1800).then(() => b.remove());
+  }
+  function setActor(id, props) {
+    const a = actor(id);
+    if (!a) return;
+    Object.assign(a, props);
+    if (a === P) { P.look = ''; renderPlayer(); } else renderNpc(a);
+  }
+
+  const ORDERS = {
+    drink: [['☕', 'a drip coffee'], ['🧋', 'a cold brew'], ['🥛', 'a caramel latte'], ['🍵', 'a matcha latte']],
+    food: [['🥨', 'a soft pretzel'], ['🍩', 'a donut'], ['🥐', 'a croissant'], ['🍪', 'a cookie']],
+  };
+
+  // item: a store item ({ emoji, name, cat }). withId: a colleague joining you (optional).
+  // talk(done): called while seated; call done() when the conversation ends.
+  async function cafeBreak(item, withId, talk) {
+    if (!world || busyScene) return false;
+    busyScene = true;
+    const food = /churro|pretzel|cookie|donut|croissant|snack|popcorn|sandwich|fruit|muffin/i.test(item.name + item.id);
+    const mine = [item.emoji, 'a ' + item.name.toLowerCase()];
+    const theirs = withId ? U.pick(ORDERS[food ? 'food' : 'drink']) : null;
+    const buddy = withId && actor(withId);
+    const home = buddy ? { x: buddy.x, y: buddy.y, wander: buddy.wander } : null;
+    if (buddy) { buddy.inScene = true; }
+    try {
+      await Promise.all([moveTo('player', ...CAFE.order[0]), buddy ? moveTo(withId, ...CAFE.order[1]) : Promise.resolve()]);
+      await say('player', `Hi Gus! Could I get ${mine[1]}, please?`, 1700);
+      if (buddy) await say(withId, `And ${theirs[1]} for me, thanks!`, 1500);
+      await say('gus', U.pick(['Coming right up!', 'Great choice. One sec!', 'You got it!']), 1400);
+      await wait(900);
+      await say('gus', food ? 'Fresh out of the oven. Enjoy!' : 'Here you go. Careful, it\'s hot!', 1400);
+      setActor('player', { held: mine[0] });
+      if (buddy) setActor(withId, { held: theirs[0] });
+      await say('player', 'Thanks, Gus!', 900);
+      await Promise.all([moveTo('player', ...CAFE.seats[0]), buddy ? moveTo(withId, ...CAFE.seats[1]) : Promise.resolve()]);
+      const using = food ? 'bite' : 'sip';
+      setActor('player', { sitting: true, using });
+      if (buddy) setActor(withId, { sitting: true, using: /🥨|🍩|🥐|🍪/.test(theirs[0]) ? 'bite' : 'sip' });
+      await wait(1200);
+      if (talk) await new Promise((done) => talk(done));
+      else {
+        await say('player', food ? 'Mmm. That hits the spot.' : 'Ahh. Much better.', 1800);
+        await wait(1500);
+      }
+      await say('player', food ? '(finishes the last bite)' : '(finishes the last sip)', 1200);
+      setActor('player', { sitting: false, held: null, using: null });
+      if (buddy) setActor(withId, { sitting: false, held: null, using: null });
+      if (buddy) {
+        await say(withId, U.pick(['Thanks, that was fun!', 'Back to it. See you at standup!', 'We should do this again.']), 1300);
+        moveTo(withId, home.x, home.y).then(() => { buddy.inScene = false; renderNpc(buddy); });
+      }
+      await moveTo('player', 1000, 640);
+    } finally {
+      busyScene = false;
+      if (buddy && !buddy.cut) buddy.inScene = false;
+    }
+    return true;
+  }
+
   function setPos(x, y) {
     P.x = x;
     P.y = y;
@@ -507,7 +625,8 @@ IS.office = (function () {
   }
 
   return {
-    mount, unmount, refresh, walkTo, goToHotspot, setPos,
+    mount, unmount, refresh, walkTo, goToHotspot, setPos, cafeBreak, say,
+    inScene: () => busyScene,
     isMounted: () => !!root && document.body.contains(root),
     pause: (v) => { if (v) Object.keys(keys).forEach((k) => { keys[k] = false; }); },
     SPOTS: { lobby: [300, 640], cafe: [900, 660], desk: [1395, 660], mentor: [2080, 640], it: [2440, 640], manager: [2700, 640], conference: [3200, 720], lab: [3450, 690], exit: [110, 620] },
