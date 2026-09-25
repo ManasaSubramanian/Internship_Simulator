@@ -327,12 +327,5 @@ DELETE FROM reservations WHERE status = 'cancelled';`,
         { q: 'COUNT(*) vs COUNT(column):', options: ['Same', 'COUNT(column) skips NULLs', 'COUNT(*) skips NULLs', 'COUNT(column) sums'], answer: 1 },
       ],
     },
-    training: {
-      lessons: [
-        { title: 'Query anatomy', html: '<pre>SELECT a.land, SUM(r.party_size) AS guests\nFROM reservations r\nJOIN attractions a ON a.attraction_id = r.attraction_id\nWHERE r.status = \'confirmed\'\nGROUP BY a.land\nHAVING SUM(r.party_size) &gt; 10\nORDER BY guests DESC\nLIMIT 5;</pre><p>Logical order: FROM/JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.</p>' },
-        { title: 'Joins without surprises', html: '<p>Every JOIN needs an ON that matches a foreign key to a primary key. Use <code>LEFT JOIN … WHERE right.id IS NULL</code> to find rows with no match.</p>' },
-        { title: 'Grouping and NULLs', html: '<p>Every non-aggregated column in SELECT belongs in GROUP BY. <code>NULL</code> never equals anything, so use <code>IS NULL</code>. <code>COUNT(col)</code> skips NULLs.</p>' },
-      ],
-    },
   });
 })();

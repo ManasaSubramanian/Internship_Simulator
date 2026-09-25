@@ -954,11 +954,4 @@ function bestNextRide(rides) {
       { q: '`let` differs from `var` because `let` is…', options: ['function-scoped', 'block-scoped', 'always global', 'immutable'], answer: 1 },
     ],
   },
-  training: {
-    lessons: [
-      { title: 'Strings & arrays toolkit', html: '<p>Most interview string problems are <b>split → transform → join</b>.</p><pre>"  a  b ".trim().split(/\\s+/)   // ["a", "b"]\n["a", "b"].reverse().join(" ") // "b a"\n[1, 2, 3].filter(n => n > 1)   // [2, 3]\n[1, 2, 3].reduce((a, b) => a + b, 0) // 6</pre><p>Watch out: <code>"".split(/\\s+/)</code> is <code>[""]</code>, so handle empty input first.</p>' },
-      { title: 'Edge cases first', html: '<p>Before coding, list edge cases out loud: <b>empty input, one element, duplicates, negatives, ties, no answer</b>. Interviewers score this habit highly. Write the guard clauses first:</p><pre>if (!nums.length) return [];</pre>' },
-      { title: 'Hash maps for speed', html: '<p>Nested loops are O(n²). A <code>Map</code> remembers what you have seen so one pass is enough:</p><pre>const seen = new Map();\nfor (let j = 0; j &lt; nums.length; j++) {\n  const need = target - nums[j];\n  if (seen.has(need)) return [seen.get(need), j];\n  if (!seen.has(nums[j])) seen.set(nums[j], j);\n}\nreturn [];</pre>' },
-    ],
-  },
 });

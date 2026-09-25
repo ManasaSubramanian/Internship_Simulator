@@ -1,5 +1,5 @@
-// Behavioral interview content shared by every internship, plus the
-// behavioral lessons in the training center.
+// Behavioral interview content shared by every internship. The lessons that
+// teach it live in the Learning Center (js/data/learn/career.js).
 IS.behavioral = {
   questions: [
     { q: 'Tell me about a time you disagreed with a teammate. What happened?', options: [
@@ -77,9 +77,4 @@ IS.behavioral = {
       terms: [],
     },
   },
-  lessons: [
-    { title: 'The STAR method', html: '<p>Great behavioral answers follow <b>STAR</b>:</p><ul><li><b>Situation</b>: one sentence of context.</li><li><b>Task</b>: what you were responsible for.</li><li><b>Action</b>: what <i>you</i> did (use "I", not "we").</li><li><b>Result</b>: the outcome, ideally with a number, plus what you learned.</li></ul><p><b>Weak:</b> "I\'m a team player." <b>Strong:</b> "Our demo was at risk (S). I owned the API (T). I paired with a stuck teammate and cut two features (A). We demoed on time, and 400 students used it (R)."</p>' },
-    { title: 'Red flags interviewers notice', html: '<ul><li>Blaming others ("my teammate was wrong", "the professor was unfair").</li><li>Claiming you never fail or never get feedback.</li><li>Vague adjectives with no example ("I\'m hard-working").</li><li>Hiding problems instead of raising them early.</li></ul><p>Interviewers are checking one thing: <i>would I trust this person on my team?</i></p>' },
-    { title: 'Answering "Why this internship?"', html: '<p>Connect three things: <b>what excites you</b> about the work, <b>a specific skill or project</b> you bring, and <b>what you want to learn</b>. Mention the team or the guest experience specifically. 60–120 words is plenty.</p>' },
-  ],
 };

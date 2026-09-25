@@ -15,6 +15,7 @@ const req = (p) => require(path.join(ROOT, p));
 const trackFiles = fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) => /^t\d\d-[a-z]+\.js$/.test(f)).sort();
 trackFiles.forEach((f) => req('js/data/tracks/' + f));
 fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) => f.endsWith('.expected.js')).forEach((f) => req('js/data/tracks/' + f));
+fs.readdirSync(path.join(ROOT, 'js/data/learn')).filter((f) => f.endsWith('.js')).forEach((f) => req('js/data/learn/' + f));
 req('js/grading.js');
 const jsRun = req('js/runners/javascript.js');
 const pyRun = req('js/runners/python.js');
@@ -116,6 +117,46 @@ async function checkTechnical(track, p, sols, label) {
   }
 }
 
+// Learning Center: every topic explains in words, shows code (technical
+// subjects), and has 1-3 practice problems whose solutions pass and starters fail.
+async function checkLearn(trackId, track) {
+  const topics = (IS.learnData || {})[trackId] || [];
+  check(topics.length >= 4, `learn/${trackId} has at least 4 topics (has ${topics.length})`);
+  const ids = new Set();
+  for (const t of topics) {
+    const L = `learn/${trackId}/${t.id}`;
+    check(t.title && t.summary && t.words && t.words.length > 300, `${L} has a title, summary and a real plain-words explanation`);
+    check(!!t.example && t.example.code && t.example.steps && t.example.steps.length >= 3, `${L} has a worked example with 3+ steps`);
+    if (t.example) {
+      const n = t.example.code.replace(/\n$/, '').split('\n').length;
+      t.example.steps.forEach((s, i) => (s.lines || []).forEach((ln) => check(ln >= 1 && ln <= n, `${L} step ${i} line ${ln} exists`)));
+    }
+    check(t.practice && t.practice.length >= 1 && t.practice.length <= 3, `${L} has 1-3 practice problems`);
+    check(t.practice && t.practice.length === 3, `${L} has 3 practice problems`);
+    for (const p of t.practice || []) {
+      const P = `${L}/${p.id}`;
+      check(!ids.has(p.id), P + ' unique id');
+      ids.add(p.id);
+      check(p.title && p.brief && p.hint && p.solution != null, P + ' has title, brief, hint and solution');
+      if (p.type === 'choice') {
+        check(p.answer >= 0 && p.answer < p.options.length && !!p.explain, P + ' choice answer valid and explained');
+        continue;
+      }
+      const res = await run(track, p, p.solution);
+      if (!res) continue;
+      check(!res.error, `${P} solution runs: ${res.error}`);
+      if (res.results) res.results.forEach((r, i) => check(r.pass, `${P} solution check #${i}${r.label ? ' "' + r.label + '"' : ''} got ${r.got}`));
+      if (p.type === 'terminal') {
+        const fresh = shell.create(p.fs);
+        check(!p.objectives.every((o) => { try { return o.check(fresh); } catch (e) { return false; } }), `${P} objectives should not start completed`);
+        continue;
+      }
+      const start = await run(track, p, p.starter || '');
+      check(start && (start.error || start.results.some((r) => !r.pass)), `${P} starter should fail at least one check`);
+    }
+  }
+}
+
 function checkSoft(track, t) {
   const L = track.id + '/' + t.id;
   if (t.type === 'written') {
@@ -177,9 +218,10 @@ function checkSoft(track, t) {
     check(track.interview.coding.length >= 3, track.id + ' has 3 interview problems');
     check(track.interview.concepts.length >= 6, track.id + ' has 6+ concept questions');
     track.interview.concepts.forEach((q, i) => check(q.answer >= 0 && q.answer < q.options.length, `${track.id} concept ${i} answer valid`));
-    check(track.training.lessons.length >= 2, track.id + ' has training lessons');
+    await checkLearn(track.id, track);
     console.log(`${failures === before ? '✔' : '✗'} ${track.n}. ${track.langLabel} (${track.tasks.length} tasks, ${tech} technical)`);
   }
+  await checkLearn('career', null);
   // Written behavioral answer rubric
   check(IS.grading.written({ rubric: IS.behavioral.freeResponse.rubric }, '').score <= 15, 'behavioral free response: empty scores low');
   IS.behavioral.questions.forEach((q, i) => check(Math.max(...q.options.map((o) => o.pts)) === 10, `behavioral Q${i} has a best answer`));

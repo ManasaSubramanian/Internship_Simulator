@@ -7,20 +7,22 @@ const ROOT = path.join(__dirname, '..');
 const req = (p) => require(path.join(ROOT, p));
 ['js/util.js', 'js/data/characters.js', 'js/tracks.js'].forEach(req);
 fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) => /^t\d\d-[a-z]+\.js$/.test(f)).sort().forEach((f) => req('js/data/tracks/' + f));
+fs.readdirSync(path.join(ROOT, 'js/data/learn')).filter((f) => f.endsWith('.js')).forEach((f) => req('js/data/learn/' + f));
 const sqlRun = req('js/runners/sql.js');
 
 (async () => {
   const SQL = await require('sql.js')();
   const files = fs.readdirSync(path.join(ROOT, 'js/data/tracks')).filter((f) => /^t\d\d-[a-z]+\.js$/.test(f));
   for (const track of IS.tracks.filter(Boolean)) {
-    const problems = track.tasks.filter((t) => t.type === 'sql').concat(track.interview.coding.filter((p) => p.type === 'sql'));
+    const learn = ((IS.learnData || {})[track.id] || []).reduce((a, t) => a.concat(t.practice.filter((p) => p.type === 'sql')), []);
+    const problems = track.tasks.filter((t) => t.type === 'sql').concat(track.interview.coding.filter((p) => p.type === 'sql'), learn);
     if (!problems.length) continue;
     const sols = require('./solutions/' + track.id + '.js');
     const out = {};
     for (const p of problems) {
       const db = p.db || track.db;
       out[p.id] = db.seeds.map((seed) => {
-        const r = sqlRun.exec(SQL, db.schema, seed, sols[p.id]);
+        const r = sqlRun.exec(SQL, db.schema, seed, p.solution != null ? p.solution : sols[p.id]);
         if (r.error) throw new Error(track.id + '/' + p.id + ': ' + r.error);
         if (!r.rows.length) console.warn('  warning: ' + track.id + '/' + p.id + ' returns no rows on a seed');
         return r;

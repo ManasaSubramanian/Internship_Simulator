@@ -188,6 +188,7 @@ IS.workspace = (function () {
     const peer = IS.characters[task.peer.who];
     const mentor = IS.characters[E().cast().mentor];
     const log = (r.helpLog || []).slice().reverse();
+    const related = IS.learn.related(task, E().track().id, 2);
     return `<div class="ws-side">
       <div class="panel"><h3>⏱️ Focus time</h3>
         <div class="spread small"><span>${Math.floor(r.progress)} / ${task.effort} min logged</span><span>${pct}%</span></div><div class="bar"><span style="width:${pct}%"></span></div>
@@ -199,6 +200,7 @@ IS.workspace = (function () {
         <button class="btn small block" data-act="taskHelp" data-arg="wiki|${task.id}" ${on ? '' : 'disabled'}>📚 Search the wiki · 5m</button>
         ${E().hasDuck() ? `<button class="btn small block" data-act="taskHelp" data-arg="duck|${task.id}" ${on && j.duckDay !== j.day ? '' : 'disabled'}>🦆 Rubber duck · 5m (1/day)</button>` : ''}
         <button class="btn small block ghost" data-act="taskHelp" data-arg="extension|${task.id}" ${on && !r.extRequested ? '' : 'disabled'}>📅 Ask for an extension · 5m</button></div>
+        ${related.length ? `<div class="related"><div class="small" style="font-weight:900;margin:10px 0 6px">📖 Learn the concepts (free, no time used)</div>${related.map((x) => `<button class="btn small block ghost" data-act="learn" data-arg="${x.trackId}|${x.t.id}">${x.t.icon || '📘'} ${U.esc(x.t.title)}</button>`).join('')}</div>` : `<button class="btn small block ghost" style="margin-top:8px" data-act="learn">📖 Open the Learning Center</button>`}
         <p class="small muted" style="margin:8px 0 0">Tip: you can also walk over and ask people in person.</p>
         ${log.length ? `<div style="margin-top:10px;max-height:280px;overflow-y:auto">${log.map((h) => `<div class="help-msg">${h.who ? `<span style="border-radius:8px;overflow:hidden;line-height:0;flex:none">${IS.people.portrait(h.who, 30)}</span>` : '<span style="font-size:1.3rem">📚</span>'}<div>${h.html || U.esc(h.text)}</div></div>`).join('')}</div>` : ''}</div>
       <div class="panel" ${can.ok ? 'style="box-shadow:0 0 0 3px var(--gold), var(--shadow)"' : ''}><h3>📤 Submit</h3>

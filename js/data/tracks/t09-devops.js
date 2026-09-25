@@ -370,12 +370,5 @@ CMD npm start`,
         { q: 'Infrastructure as code means:', options: ['Servers written in Python', 'Configs and infrastructure defined in versioned files', 'No servers', 'Manual setup'], answer: 1 },
       ],
     },
-    training: {
-      lessons: [
-        { title: 'YAML in five minutes', html: '<pre># comment\nname: wait-api\nreplicas: 3\nhealthcheck:\n  path: /health\nstages:\n  - lint\n  - test\njobs:\n  - name: lint\n    script:\n      - npm run lint</pre><p>Two spaces per level. Lists use "- ". Never tabs.</p>' },
-        { title: 'Terminal triage', html: '<pre>grep -l OOMKilled /var/log/pods/*.log   # which file?\ngrep -c " 5[0-9][0-9]$" access.log      # how many 5xx?\nsed -i \'s/8008/8080/\' service.yaml       # fix in place</pre>' },
-        { title: 'Reliability math', html: '<pre>allowed = total * (1 - slo)\nremaining = (allowed - errors) / allowed\ndelay_i = min(cap, base * 2 ** i)</pre>' },
-      ],
-    },
   });
 })();

@@ -21,6 +21,12 @@
     <h3>📋 Work & deadlines</h3>
     <ul><li>Log <b>focus time</b> on an assignment, do the work, then submit. Everything is graded with a visible rubric.</li>
     <li>Late work: <b>−10% per workday</b> and a <b>$10</b> pay adjustment. More than 2 workdays late = <b>missed</b> (0% and another $25). Ask for an extension <i>before</i> the deadline.</li></ul>
+    <h3>📚 Learning Center</h3>
+    <ul><li>Open it with <b>📚</b> in the office, the <b>Learn</b> app on your computer, or from home and the career center. Every internship has beginner lessons, plus career skills.</li>
+    <li>Each topic explains the idea in plain words, walks through a code example line by line, then gives you <b>3 practice problems</b> that loop. Stuck? Use the hint, or peek at the solution after one try.</li>
+    <li>Assignments list related lessons under <b>Get help</b>. Studying is free and doesn't use work time.</li></ul>
+    <h3>💾 Saving</h3>
+    <ul><li>The game saves automatically in this browser. The <b>💾 Export save</b> button (bottom-left, on every screen) downloads a backup file. Load it with ☰ Menu → Import save.</li></ul>
     <h3>🛍️ Spending</h3>
     <ul><li>Studio Store (lobby): outfits, hats, accessories and desk upgrades. Café: energy. From home: outings and trips for morale.</li></ul>`;
 
@@ -152,6 +158,7 @@
     resetCode: (id) => W.resetCode(id),
     resetShell: (id) => W.resetShell(id),
     submit: (id) => W.submit(id),
+    learn: (arg) => { const [t, topic] = String(arg || '').split('|'); IS.learn.open(t || null, topic || null); },
     taskHelp: (arg) => { const [kind, id] = arg.split('|'); W.help(kind, id); },
     slideAdd: (id) => W.slideAdd(id),
     slideDel: (arg) => { const [id, i] = arg.split('|'); W.slideDel(id, +i); },
@@ -179,6 +186,23 @@
   });
   window.addEventListener('resize', () => { if (IS.office.isMounted()) IS.office.refresh(); });
 
+  // Always-visible save button (every screen, including the Learning Center and ceremonies).
+  const fab = document.createElement('button');
+  fab.id = 'save-fab';
+  fab.type = 'button';
+  fab.title = 'Export save: download your progress as a file. (The game also saves automatically in this browser.)';
+  fab.setAttribute('aria-label', 'Export save');
+  fab.innerHTML = '<span class="ic">💾</span><span class="lbl">Export save</span>';
+  fab.addEventListener('click', () => {
+    if (!st()) return ui.toast('Start a career first. There\'s nothing to save yet.', 'bad');
+    exportSave();
+    ui.toast('💾 Save file downloaded. Import it any time from ☰ Menu.', 'good');
+  });
+  document.body.appendChild(fab);
+  const syncFab = () => { fab.hidden = !st(); };
+  setInterval(syncFab, 800);
+
   IS.state.load();
   ui.render();
+  syncFab();
 })();

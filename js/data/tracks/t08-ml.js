@@ -311,11 +311,4 @@ def predict_crowd(features):
       { q: 'What is data drift?', options: ['A training trick', 'Production data changing over time vs training data', 'A bug in numpy', 'Model compression'], answer: 1 },
     ],
   },
-  training: {
-    lessons: [
-      { title: 'Metrics you must know', html: '<pre>mse = sum((t - p) ** 2 for t, p in zip(y, yhat)) / n\nmae = sum(abs(t - p) for t, p in zip(y, yhat)) / n\nprecision = tp / (tp + fp)   recall = tp / (tp + fn)</pre>' },
-      { title: 'Evaluation hygiene', html: '<p>Split first. Fit scalers and models on train only. Evaluate on held-out data. For time series, the test set is the future. Report more than accuracy.</p>' },
-      { title: 'Vectors in plain Python', html: '<pre>dot = sum(x * y for x, y in zip(a, b))\nbest = max(range(len(v)), key=lambda i: (v[i], -i))  # argmax, first on ties</pre>' },
-    ],
-  },
 });

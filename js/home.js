@@ -110,6 +110,7 @@ IS.home = (function () {
           <p>Next up: <b>${U.weekday(j.day)}, Day ${j.day} of 34</b>. ${open ? `You have <b>${open}</b> open assignment${open > 1 ? 's' : ''} waiting on your work computer.` : 'Nothing open right now.'}</p>
           <div class="grid grid-3" style="margin-bottom:12px"><div class="kpi"><div class="v">${U.money(s.wallet)}</div><div class="k">Wallet</div></div><div class="kpi"><div class="v">${Math.round(j.morale)}</div><div class="k">Morale</div></div><div class="kpi"><div class="v">${((j.day - 1) * 3).toFixed(0)} / 100</div><div class="k">Hours so far</div></div></div>
           <div class="row"><button class="btn gold big" data-act="goToWork">🌅 Go to work (Day ${j.day})</button>
+            <button class="btn" data-act="learn">📚 Study (Learning Center)</button>
             <button class="btn" data-act="outings">🎟️ Plan an outing</button><button class="btn" data-act="wardrobe">🪞 Mirror & wardrobe</button>
             <button class="btn" data-act="shopOnline">🛍️ Shop online</button><button class="btn" data-act="awards">🏆 Career & awards</button></div></div>
         ${lastStub ? `<div class="panel"><h3>💵 Latest paycheck (Week ${lastStub.week})</h3>${IS.computer.stubTable(lastStub)}</div>` : ''}
@@ -122,7 +123,7 @@ IS.home = (function () {
     const s = st();
     return `<div class="screen home"><div class="home-inner">${apartmentFigure()}
       <div class="stack"><div class="spread"><h1 style="margin:0">🎓 Career Center</h1><div class="row"><span class="pill gold">Wallet ${U.money(s.wallet)}</span>
-        <button class="btn small" data-act="wardrobe">🪞 Wardrobe</button><button class="btn small" data-act="shopOnline">🛍️ Shop</button><button class="btn small" data-act="outings">🎟️ Outings</button><button class="btn small dark" data-act="menu">☰</button></div></div>
+        <button class="btn small" data-act="learn">📚 Learn</button><button class="btn small" data-act="wardrobe">🪞 Wardrobe</button><button class="btn small" data-act="shopOnline">🛍️ Shop</button><button class="btn small" data-act="outings">🎟️ Outings</button><button class="btn small dark" data-act="menu">☰</button></div></div>
         ${inner}
         <div class="panel"><h3>Your career path</h3>${IS.computer.careerHtml(s)}</div></div></div></div>`;
   }

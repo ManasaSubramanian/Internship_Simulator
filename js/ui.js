@@ -139,6 +139,7 @@ IS.ui = (function () {
           <div><div class="k">Wallet</div><div class="v" style="color:var(--gold-2)">${U.money(s.wallet)}</div></div>
           <div class="hide-sm"><div class="k">Unpaid</div><div class="v">${U.money(pending)}</div></div>
           <button class="btn small gold" data-act="openComputer" title="Your computer is at your desk">💻${unread ? ' ' + unread : ''}</button>
+          <button class="btn small dark" data-act="learn" title="Learning Center: lessons and practice">📚</button>
           <button class="btn small dark" data-act="help" title="How to play">?</button>
           <button class="btn small dark" data-act="menu" title="Menu">☰</button>
         </div>

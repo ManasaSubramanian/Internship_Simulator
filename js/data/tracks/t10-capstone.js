@@ -373,12 +373,5 @@
         { q: 'As the most senior intern, a teammate is stuck for a day. You:', options: ['Ignore it; not your task', 'Offer to pair, and flag the risk to the team if the deadline is at stake', 'Do their task secretly', 'Tell the manager they\'re slow'], answer: 1 },
       ],
     },
-    training: {
-      lessons: [
-        { title: 'One feature, every layer', html: '<pre>-- SQL: aggregate close to the data\nSELECT land, ROUND(AVG(stars), 2) AS avg_stars FROM ratings r JOIN attractions a USING (attraction_id) GROUP BY land;\n\n# Python: rank and filter\nranked = sorted(totals, key=lambda r: (-avg(r), r))[:k]\n\n// JavaScript: render safely\nli.textContent = `${s.time} — ${s.name}`;</pre>' },
-        { title: 'Choosing data structures', html: '<p><b>Objects/dicts</b> for lookup by key; <b>sets</b> for "have I seen this?" (use tuples in Python); <b>Map</b> in JavaScript when insertion order matters (LRU caches). Sort with explicit tie-breaks so results are deterministic.</p>' },
-        { title: 'Owning production', html: '<p>Read the runbook, restore service, confirm the fix, then report numbers: <code>grep -c \'pool exhausted\' api.log</code>. Afterwards: a blameless postmortem and an alert so it can\'t hide again.</p>' },
-      ],
-    },
   });
 })();

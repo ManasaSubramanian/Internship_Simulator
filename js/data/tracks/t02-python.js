@@ -355,11 +355,4 @@ def notify(guest_email, item):
       { q: 'Which exception does int("abc") raise?', options: ['TypeError', 'ValueError', 'KeyError', 'NameError'], answer: 1 },
     ],
   },
-  training: {
-    lessons: [
-      { title: 'Pythonic basics', html: '<pre>squares = [n * n for n in nums if n > 0]\ncounts = {}\nfor w in words:\n    counts[w] = counts.get(w, 0) + 1\nfor i, ch in enumerate(s):\n    ...</pre><p>Comprehensions, <code>dict.get</code> and <code>enumerate</code> cover most interview loops.</p>' },
-      { title: 'Strings', html: '<pre>s.strip().lower().split()   # clean + tokenize\ns[::-1]                     # reverse\n"".join(sorted(s))          # canonical form for anagrams\nch.isalnum(), ch.isdigit()</pre>' },
-      { title: 'Counting & sets', html: '<p><code>collections.Counter(s)</code> counts characters. Two strings are anagrams if their Counters are equal. A <code>set</code> answers "have I seen this?" in O(1).</p>' },
-    ],
-  },
 });

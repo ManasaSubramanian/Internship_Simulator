@@ -422,12 +422,5 @@ curl http://10.0.0.5/reload?key=SUPERSECRET123`,
         { q: 'The safest first step before `find … -delete`?', options: ['Run it with sudo', 'Run the find without -delete and review the list', 'Reboot', 'chmod 777'], answer: 1 },
       ],
     },
-    training: {
-      lessons: [
-        { title: 'Navigating and reading files', html: '<pre>pwd            # where am I?\nls -l /etc     # long listing\ncd /var/log    # move\ncat file       # print\nhead -n 5 f    # first 5 lines\ntail -n 5 f    # last 5 lines</pre>' },
-        { title: 'grep and pipelines', html: '<pre>grep -c ERROR show.log              # count\ngrep -r cue_offset /etc             # search a tree\ncut -d, -f2 data.csv | sort | uniq -c\ntail -n 3 show.log > /tmp/report    # save output</pre><p>Each tool does one job; pipes glue them together.</p>' },
-        { title: 'Permissions and safety', html: '<p><code>chmod 755</code> = rwxr-xr-x, <code>chmod 600</code> = rw-------. Always preview destructive commands (find without -delete, ls the wildcard before rm).</p>' },
-      ],
-    },
   });
 })();

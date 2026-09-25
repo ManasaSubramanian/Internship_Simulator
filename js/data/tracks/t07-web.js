@@ -394,12 +394,5 @@
         { q: 'Why does alt text matter?', options: ['SEO only', 'Screen reader users need it to understand images', 'It makes images load faster', 'It doesn\'t'], answer: 1 },
       ],
     },
-    training: {
-      lessons: [
-        { title: 'Semantic, accessible HTML', html: '<pre>&lt;main&gt;\n  &lt;h1&gt;Park Updates&lt;/h1&gt;\n  &lt;label for="email"&gt;Email&lt;/label&gt;\n  &lt;input id="email" type="email" required&gt;\n  &lt;button type="submit"&gt;Sign up&lt;/button&gt;\n&lt;/main&gt;</pre><p>Real elements give you keyboard support and screen-reader names for free.</p>' },
-        { title: 'DOM scripting', html: '<pre>const btn = document.getElementById(\'add\');\nbtn.addEventListener(\'click\', () =&gt; {\n  count.textContent = Number(count.textContent) + 1;\n});</pre>' },
-        { title: 'Security & state', html: '<p>Use <code>textContent</code> for data, never <code>innerHTML</code>. Disable buttons during async work. Validate on input and announce errors with <code>aria-live</code>.</p>' },
-      ],
-    },
   });
 })();

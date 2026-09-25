@@ -191,6 +191,7 @@ IS.computer = (function () {
     const body = app === 'task' ? IS.workspace.render(arg) : apps[app]();
     return `<div class="computer"><div class="monitor"><div class="screen-os">
       <nav class="dock" aria-label="Apps">${DOCK.map(([id, ic, l]) => `<button class="${app === id || (app === 'task' && id === 'todo') ? 'active' : ''}" data-act="app" data-arg="${id}"><span class="ic">${ic}</span>${l}${id === 'mail' && unread ? `<span class="badge">${unread}</span>` : ''}${id === 'todo' && open ? `<span class="badge">${open}</span>` : ''}</button>`).join('')}
+        <button data-act="learn"><span class="ic">📚</span>Learn</button>
         <div class="sep"></div><button data-act="closeComputer" title="Stand up from your desk"><span class="ic">🚶</span>Stand up</button></nav>
       <main class="app" id="app-pane">${body}</main></div>
       <div class="monitor-foot"><span>🕘 ${j.clockedIn ? U.clock(j.minute) : 'Not badged in'} · Day ${j.day}/34</span><span>⚡ ${Math.round(j.energy)} · 🙂 ${Math.round(j.morale)} · productivity ${Math.round(E().productivity() * 100)}%</span></div></div></div>`;

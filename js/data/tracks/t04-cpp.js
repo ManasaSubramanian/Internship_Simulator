@@ -330,11 +330,4 @@ int average() {
       { q: 'What does a watchdog timer do?', options: ['Counts pets', 'Resets or safes the system if the software stops responding', 'Speeds up loops', 'Logs errors'], answer: 1 },
     ],
   },
-  training: {
-    lessons: [
-      { title: 'C-style C++ essentials', html: '<pre>int sum(const int a[], int n) {\n    int total = 0;\n    for (int i = 0; i &lt; n; i++) total += a[i];\n    return total;\n}</pre><p>Arrays don\'t know their size. Always pass <code>n</code>, and valid indexes are 0 … n−1.</p>' },
-      { title: 'Integer math & bits', html: '<ul><li><code>7 / 2 == 3</code> and <code>7 % 2 == 1</code></li><li><code>x % 10</code> is the last digit; <code>x / 10</code> drops it</li><li><code>mask &amp; (1 &lt;&lt; k)</code> tests bit k; <code>mask &gt;&gt;= 1</code> shifts right</li></ul>' },
-      { title: 'Firmware habits', html: '<p>Clamp every input, never block the loop, no heap allocation, and treat every sensor value as possibly wrong. Interviewers love hearing you think about failure modes.</p>' },
-    ],
-  },
 });

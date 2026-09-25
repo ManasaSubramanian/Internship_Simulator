@@ -6,7 +6,7 @@ An interactive game that gives you the experience of a software engineering inte
 
 ## ▶️ How to play
 
-No build step. Open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari). Progress saves automatically in your browser. You can export or import a save file from the ☰ menu.
+No build step. Open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari). Progress saves automatically in your browser. The **💾 Export save** button in the bottom-left corner of every screen downloads a backup file; load it again with ☰ Menu → Import save.
 
 To serve it locally instead (optional):
 
@@ -23,7 +23,15 @@ Every internship starts with an interview:
 - **Behavioral round:** five situational questions plus a short written answer, graded with a STAR-style rubric.
 - **Technical round:** four concept questions and a timed live coding problem in that internship's language.
 
-Score 70+ on both rounds to get the offer. If you don't pass, you go through **interview training** (lessons and practice problems), then retry. You can retry as often as you like, and each completed training adds a small prep bonus. A return offer waives the behavioral round of the next interview.
+Score 70+ on both rounds to get the offer. If you don't pass, you go through **interview training**: you work through that internship's Learning Center topics (plus STAR answers if the behavioral round counts), solving a practice problem in each, then retry. You can retry as often as you like, and each completed training adds a small prep bonus. A return offer waives the behavioral round of the next interview.
+
+### 📚 Learning Center
+Beginner-friendly lessons for every internship, written for someone who has never used that language or heard of the topic. There are 45 topics (135 practice problems): 4–5 per internship plus 4 career skills (STAR interview answers, writing at work, code reviews, presenting). Each topic has:
+1. **The idea in plain words:** an explanation with an everyday analogy and a "words to know" glossary.
+2. **See it in code:** a worked example with a line-by-line breakdown. Pointing at a step highlights the matching lines.
+3. **Your turn:** 3 practice problems that loop (1 → 2 → 3 → 1), run in the same engines as the real work. Each has a hint, and after one attempt you can reveal a solution.
+
+Open it with 📚 in the office, the Learn app on your computer, from home, or from the career center. Every assignment also links its related lessons under **Get help**.
 
 ### 🏢 The office
 The main screen is the studio itself. You walk around by clicking or with WASD/arrow keys, and press **E** to interact.
@@ -89,6 +97,9 @@ js/office.js               the walkable office scene
 js/computer.js             the in-game computer and its apps
 js/workspace.js            assignment editors + live presentation stage
 js/interview.js            interviews and training
+js/learn.js                Learning Center (lessons + looping practice)
+js/problem.js              shared practice-problem editor/runner
+js/data/learn/*.js         lesson content for each internship + career skills
 js/home.js                 title, character creator, apartment, results
 js/ceremony.js             award ceremonies
 js/ui.js, js/main.js       rendering, dialogue, day flow, click dispatcher
@@ -108,6 +119,6 @@ The test suite runs every technical task and interview problem with the same eng
 - the starter code fails at least one check;
 - the rubrics reward thorough work over empty work.
 
-It also checks schedules, casts and interview data. Reference solutions are in `tests/solutions/`.
+It also checks every Learning Center topic: it has an explanation and a worked example whose steps point at real lines, and its practice problems' solutions pass while their starters fail. Schedules, casts and interview data are checked too. Reference solutions are in `tests/solutions/`.
 
 If you change a SQL task, regenerate its expected results with `npm run gen:sql`.

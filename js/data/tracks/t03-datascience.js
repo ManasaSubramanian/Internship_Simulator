@@ -325,11 +325,4 @@ overall = sum(rates) / len(rates)  # overall conversion rate`,
       { q: 'Why deduplicate events by id?', options: ['To save disk space only', 'Retries can re-send events, inflating counts', 'IDs are random', 'It makes charts prettier'], answer: 1 },
     ],
   },
-  training: {
-    lessons: [
-      { title: 'Descriptive statistics in plain Python', html: '<pre>s = sorted(v)\nn = len(s)\nmean = sum(s) / n\nmedian = s[n // 2] if n % 2 else (s[n//2 - 1] + s[n//2]) / 2</pre><p>Always handle the empty list before dividing.</p>' },
-      { title: 'Counting and ties', html: '<pre>from collections import Counter\nc = Counter(values)\nbest = min(c, key=lambda x: (-c[x], x))  # most common, ties → smallest</pre>' },
-      { title: 'pandas quick reference', html: '<pre>import pandas as pd\ndf = pd.DataFrame(rows)\ndf.groupby("land")["wait"].median()\ndf.dropna(subset=["wait"])\ndf["z"] = (df.x - df.x.mean()) / df.x.std(ddof=0)</pre><p>pandas loads automatically when you import it (first time needs internet).</p>' },
-    ],
-  },
 });

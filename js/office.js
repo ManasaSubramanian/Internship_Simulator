@@ -332,7 +332,7 @@ IS.office = (function () {
 
   // The world is frozen whenever a dialog, modal, stage or the computer is open.
   function blocked() {
-    return !!(document.querySelector('.modal-back, .dialog, .stage') || (IS.ui.overlay && IS.ui.overlay()));
+    return !!(document.querySelector('.modal-back, .dialog, .stage, .learn') || (IS.ui.overlay && IS.ui.overlay()));
   }
 
   function tick(ts) {
